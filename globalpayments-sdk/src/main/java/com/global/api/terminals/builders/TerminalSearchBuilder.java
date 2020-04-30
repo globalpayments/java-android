@@ -100,7 +100,7 @@ public class TerminalSearchBuilder {
     }
 
     public ITerminalReport execute(String configName) throws ApiException {
-        return _reportBuilder.Execute(configName);
+        return _reportBuilder.execute(configName);
     }
 
     // TO DO

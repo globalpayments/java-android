@@ -48,11 +48,11 @@ public class TerminalReportBuilder {
 //        return getSearchBuilder().And(criteria, value);
 //    }
 
-    public ITerminalReport Execute() throws ApiException {
-        return Execute("default");
+    public ITerminalReport execute() throws ApiException {
+        return execute("default");
     }
 
-    public ITerminalReport Execute(String configName) throws ApiException {
+    public ITerminalReport execute(String configName) throws ApiException {
         DeviceController device = ServicesContainer.getInstance().getDeviceController(configName);
         return device.processReport(this);
     }

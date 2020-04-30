@@ -1,5 +1,7 @@
 package com.global.api.terminals.ingenico.interfaces;
 
+import android.util.Log;
+
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.terminals.TerminalUtilities;
@@ -21,6 +23,7 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 
 public class IngenicoTcpInterface implements IDeviceCommInterface {
@@ -75,6 +78,7 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
             if (serverSocket != null || !serverSocket.isClosed()) {
                 input.close();
                 output.close();
+                socket.close();
                 serverSocket.close();
             }
             serverSocket = null;
@@ -87,12 +91,16 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
     public byte[] send(IDeviceMessage message) throws ApiException {
 
         terminalResponse = null;
-        receivingException = null;
+
         final byte[] buffer = message.getSendBuffer();
 
         try {
             if (serverSocket == null) {
                 throw new ConfigurationException("Error: Server is not running.");
+            }
+
+            if (!isKeepAlive){
+                socket.setSoTimeout(settings.getTimeout());
             }
 
             // Send request from builder.
@@ -105,10 +113,23 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
                 Thread.sleep(10);
 
                 if (receivingException != null) {
-                    throw new ApiException(receivingException.getMessage());
+
+                    if (!isKeepAlive){
+                        socket.setSoTimeout(0);
+                    }
+
+                    String exceptionMessage = receivingException.getMessage();
+                    receivingException = null;
+
+                    throw new ApiException(exceptionMessage);
                 }
 
                 if (terminalResponse != null) {
+
+                    if (!isKeepAlive){
+                        socket.setSoTimeout(0);
+                    }
+
                     onMessageReceived.messageReceived(TerminalUtilities.getString(terminalResponse).substring(2));
                     return terminalResponse;
                 }
@@ -145,6 +166,12 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
 
                 // Start listening on set port.
                 serverSocket = new ServerSocket(port);
+
+                receivingException = null;
+
+                isKeepAlive = false;
+                isKeepAliveRunning = false;
+
             } else {
                 throw new ConfigurationException("Port is missing.");
             }
@@ -160,7 +187,6 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
                 socket = serverSocket.accept();
 
                 // Set timeout of data read
-                socket.setSoTimeout(settings.getTimeout());
 
                 // Get input and output stream from client.
                 output = new DataOutputStream(new BufferedOutputStream(
@@ -216,6 +242,14 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
                         onBroadcastMessage.broadcastReceived(broadcastMessage.getCode(),
                                 broadcastMessage.getMessage());
                     } else if (isKeepAlive(dataBuffer) && new INGENICO_GLOBALS().KEEPALIVE) {
+
+                        isKeepAlive = true;
+
+                        if (isKeepAlive && !isKeepAliveRunning) {
+                            socket.setSoTimeout(settings.getTimeout());
+                            isKeepAliveRunning = true;
+                        }
+
                         byte[] kResponse = keepAliveResponse(dataBuffer);
                         output.write(kResponse, 0, kResponse.length);
                         output.flush();
@@ -225,7 +259,7 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
                     headerBuffer = new byte[2];
                 }
             } catch (InterruptedIOException e){
-                receivingException = e;
+                receivingException = new ApiException("Error: Server Timeout");
 //                triggerSendBlock(e,5);
             } catch (Exception e) {
                 receivingException = e;
