@@ -1,27 +1,16 @@
 package com.global.api.terminals.ingenico.responses;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.math.BigDecimal;
-import java.util.*;
-import java.math.*;
-
-import com.global.api.terminals.ingenico.*;
-import com.global.api.entities.*;
 import com.global.api.terminals.abstractions.*;
 
-import com.global.api.terminals.*;
-import com.global.api.utils.*;
-import com.global.api.entities.enums.*;
-
-public abstract class IngenicoBaseResponse implements IDeviceResponse {
+public abstract class IngenicoBaseResponse implements IDeviceResponse, IInitializeResponse {
     public String status;
     public String command;
     public String version;
     public String deviceResponseCode;
     public String deviceResponseText;
     public String referenceNumber;
+    public String rawData;
+    public String serialNumber;
 
     public String getStatus() {
         return status;
@@ -69,5 +58,17 @@ public abstract class IngenicoBaseResponse implements IDeviceResponse {
 
     public void setReferenceNumber(String referenceNumber) {
         this.referenceNumber = referenceNumber;
+    }
+
+    public String toString() {
+        return rawData;
+    }
+
+    public void setSerialNumber(String serialNumber) {
+        this.serialNumber = serialNumber;
+    }
+
+    public String getSerialNumber() {
+        return serialNumber;
     }
 }

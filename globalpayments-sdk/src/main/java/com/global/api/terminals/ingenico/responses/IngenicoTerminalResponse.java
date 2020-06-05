@@ -1,18 +1,16 @@
 package com.global.api.terminals.ingenico.responses;
 
-//import com.global.api.entities.enums.ApplicationCryptogramType;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 
 import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.terminals.abstractions.ITerminalResponse;
-import com.global.api.terminals.ingenico.responses.IngenicoBaseResponse;
-import com.global.api.terminals.ingenico.variables.DynamicCurrencyStatus;
-import com.global.api.terminals.ingenico.variables.PaymentMode;
 import com.global.api.terminals.ingenico.variables.TransactionStatus;
 import com.global.api.terminals.ingenico.variables.TransactionSubTypes;
 import com.global.api.utils.Extensions;
-
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
+import com.global.api.terminals.ingenico.variables.DynamicCurrencyStatus;
+import com.global.api.terminals.ingenico.variables.ParseFormat;
+import com.global.api.terminals.ingenico.variables.PaymentMode;
 
 public class IngenicoTerminalResponse extends IngenicoBaseResponse implements ITerminalResponse, IDeviceResponse {
 
@@ -20,12 +18,22 @@ public class IngenicoTerminalResponse extends IngenicoBaseResponse implements IT
     private BigDecimal _amount;
     private PaymentMode _paymentMode;
     private String _privateData;
-    private String terminalRawData;
     private String _currencyCode;
     private DataResponse _respField;
 
+    private byte[] buffer;
+    private ParseFormat parseFormat;
+
     public IngenicoTerminalResponse(byte[] buffer) {
-        ParseResponse(buffer);
+        this.buffer = buffer;
+        this.parseFormat = ParseFormat.Transaction;
+        parseResponse(buffer);
+    }
+
+    public IngenicoTerminalResponse(byte[] buffer, ParseFormat parseFormat) {
+        this.buffer = buffer;
+        this.parseFormat = parseFormat;
+        parseResponse(buffer);
     }
 
     public String dccCurrency;
@@ -156,7 +164,7 @@ public class IngenicoTerminalResponse extends IngenicoBaseResponse implements IT
     }
 
     public BigDecimal getTransactionAmount() {
-        return Extensions.ToAmount(_amount.toString());
+        return Extensions.toAmount(_amount.toString());
     }
 
     public void setTransactionAmount(BigDecimal transactionAmount) {
@@ -379,14 +387,6 @@ public class IngenicoTerminalResponse extends IngenicoBaseResponse implements IT
         TicketNumber = ticketNumber;
     }
 
-//    public ApplicationCryptogramType getApplicationCryptogramType() {
-//        return ApplicationCryptogramType;
-//    }
-
-//    public void setApplicationCryptogramType(ApplicationCryptogramType applicationCryptogramType) {
-//        ApplicationCryptogramType = applicationCryptogramType;
-//    }
-
     public String getApplicationCryptogram() {
         return ApplicationCryptogram;
     }
@@ -435,18 +435,20 @@ public class IngenicoTerminalResponse extends IngenicoBaseResponse implements IT
         ApplicationId = applicationId;
     }
 
-    public void ParseResponse(byte[] response) {
-        if (response != null) {
-            String _response = new String(response, StandardCharsets.UTF_8);
-            referenceNumber = _response.substring(0, 2);
-            transactionStatus = TransactionStatus.getEnumName(Integer.parseInt(_response.substring(2, 3)));
-            _amount = new BigDecimal(_response.substring(3, 11));
-            _paymentMode = PaymentMode.getEnumName(Integer.parseInt(_response.substring(11, 12)));
-            _respField = new DataResponse(_response.substring(12, 67).getBytes());
-            _currencyCode = _response.substring(67, 70);
-            _privateData = _response.substring(70, _response.length());
+    public void parseResponse(byte[] response) {
+        if (response.length > 0) {
+            rawData = new String(response, StandardCharsets.UTF_8);
+            referenceNumber = rawData.substring(0, 2);
+            transactionStatus = TransactionStatus.getEnumName(Integer.parseInt(rawData.substring(2, 3)));
+            _amount = new BigDecimal(rawData.substring(3, 11));
+            _paymentMode = PaymentMode.getEnumName(Integer.parseInt(rawData.substring(11, 12)));
+            _currencyCode = rawData.substring(67, 70);
+            _privateData = rawData.substring(70, rawData.length());
             status = transactionStatus.toString();
-            ResponseText = _response;
+
+            if (!parseFormat.equals(ParseFormat.State) && !parseFormat.equals(ParseFormat.PID)) {
+                _respField = new DataResponse(rawData.substring(12, 67).getBytes());
+            }
         }
     }
 }

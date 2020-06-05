@@ -162,7 +162,7 @@ public class DataResponse {
             String strValue = new String(arrValue, StandardCharsets.UTF_8);
 
             if (returnType == BigDecimal.class)
-                return Extensions.ToAmount(strValue);
+                return Extensions.toAmount(strValue);
             else if (returnType == String.class)
                 return strValue;
             else if (returnType == TransactionSubTypes.class)

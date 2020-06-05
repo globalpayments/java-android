@@ -9,12 +9,12 @@ public class CancelResponse extends IngenicoTerminalResponse implements IDeviceR
 
     public CancelResponse(byte[] buffer) {
         super(buffer);
-        ParseResponse(buffer);
+        parseResponse(buffer);
     }
 
     @Override
-    public void ParseResponse(byte[] response) {
-        super.ParseResponse(response);
+    public void parseResponse(byte[] response) {
+        super.parseResponse(response);
         String _response = new String(response, StandardCharsets.UTF_8);
         setStatus(CancelStatus.getEnumName(Integer.parseInt(_response.substring(2, 3))).toString());
     }
