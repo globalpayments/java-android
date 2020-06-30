@@ -5,9 +5,9 @@ import com.global.api.entities.enums.DeviceType;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.abstractions.IDeviceInterface;
+import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.terminals.abstractions.ITerminalResponse;
 import com.global.api.terminals.messaging.IBroadcastMessageInterface;
-import com.global.api.terminals.messaging.IMessageReceivedInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 
 import org.junit.Test;
@@ -137,10 +137,7 @@ public class ExampleUnitTest {
     @Test
     public void CancelTest() {
         try {
-            ITerminalResponse response = _device.cancel(new BigDecimal("6.18"))
-                    .withReferenceNumber(1)
-                    .withTransactionId("1")
-                    .execute();
+            IDeviceResponse response = _device.cancel();
 
             assertNotNull(response);
         } catch (Exception e) {
@@ -151,10 +148,7 @@ public class ExampleUnitTest {
     @Test
     public void DuplicateTest() {
         try {
-            ITerminalResponse response = _device.duplicate(new BigDecimal("6.18"))
-                    .withReferenceNumber(1)
-                    .withTransactionId("1")
-                    .execute();
+            IDeviceResponse response = _device.duplicate();
 
             assertNotNull(response);
         } catch (Exception e) {
@@ -181,13 +175,6 @@ public class ExampleUnitTest {
                 @Override
                 public void messageSent(String message) {
                     sent = message;
-                }
-            });
-
-            _device.setOnMessageReceived(new IMessageReceivedInterface() {
-                @Override
-                public void messageReceived(String message) {
-                    received = message;
                 }
             });
 
