@@ -5,8 +5,7 @@ import com.global.api.entities.enums.DeviceType;
 import com.global.api.services.DeviceService;
 import com.global.api.terminals.ConnectionConfig;
 import com.global.api.terminals.abstractions.IDeviceInterface;
-import com.global.api.terminals.abstractions.ITerminalResponse;
-import com.global.api.terminals.ingenico.variables.ReceiptType;
+import com.global.api.terminals.abstractions.ITerminalReport;
 import com.global.api.terminals.ingenico.variables.ReportTypes;
 
 import org.junit.Test;
@@ -33,7 +32,7 @@ public class TrasanctionManagementTest {
     @Test
     public void EndOfDayTest() {
         try {
-            ITerminalResponse response = _device.getReport(ReportTypes.EOD)
+            ITerminalReport response = _device.getReport(ReportTypes.EOD)
                     .execute();
 
             assertNotNull(response);
@@ -46,7 +45,7 @@ public class TrasanctionManagementTest {
     @Test
     public void BankingTest() {
         try {
-            ITerminalResponse response = _device.getReport(ReportTypes.BANKING)
+            ITerminalReport response = _device.getReport(ReportTypes.BANKING)
                     .execute();
 
             assertNotNull(response);
@@ -58,7 +57,7 @@ public class TrasanctionManagementTest {
     @Test
     public void XBalanceTest() {
         try {
-            ITerminalResponse response = _device.getReport(ReportTypes.XBAL)
+            ITerminalReport response = _device.getReport(ReportTypes.XBAL)
                     .execute();
 
             assertNotNull(response);
@@ -70,7 +69,7 @@ public class TrasanctionManagementTest {
     @Test
     public void ZBalanceTest() {
         try {
-            ITerminalResponse response = _device.getReport(ReportTypes.ZBAL)
+            ITerminalReport response = _device.getReport(ReportTypes.ZBAL)
                     .execute();
 
             assertNotNull(response);
