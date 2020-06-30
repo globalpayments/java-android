@@ -23,7 +23,7 @@ public class XmlManagement {
             config.setDeviceType(DeviceType.INGENICO);
             config.setConnectionMode(ConnectionModes.TCP_IP_SERVER);
             config.setPort("18101");
-            config.setTimeout(30000);
+            config.setTimeout(30 * 1000);
             _device = DeviceService.create(config);
             Thread.sleep(2000);
         } catch (Exception e) {
@@ -36,7 +36,7 @@ public class XmlManagement {
     public void ReportTest() {
         try {
             ITerminalReport response = _device.getLastReceipt(ReceiptType.REPORT)
-                    .Execute();
+                    .execute();
 
             assertNotNull(response.toString());
         } catch (Exception e) {
@@ -48,7 +48,7 @@ public class XmlManagement {
     public void TicketTest() {
         try {
             ITerminalReport response = _device.getLastReceipt(ReceiptType.TICKET)
-                    .Execute();
+                    .execute();
             String resp = response.toString();
             assertNotNull(resp);
         } catch (Exception e) {
