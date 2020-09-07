@@ -173,8 +173,7 @@ public class IngenicoController extends DeviceController {
         } else if (!isObjectNullOrEmpty(authCode)) {
             extendedData = Extensions.formatWith(new INGENICO_REQ_CMD().AUTHCODE, authCode);
         } else if (!isObjectNullOrEmpty(cashbackAmount)) {
-            validateCashbackAmount(cashbackAmount);
-            cashbackAmount = cashbackAmount.multiply(new BigDecimal("100"));
+            cashbackAmount = validateCashbackAmount(cashbackAmount.toString());
             extendedData = Extensions.formatWith(new INGENICO_REQ_CMD().CASHBACK, cashbackAmount);
         }
 
@@ -220,24 +219,33 @@ public class IngenicoController extends DeviceController {
         return paymentMode.getValue();
     }
 
-    private static void validateCashbackAmount(BigDecimal value) throws BuilderException {
-        Integer cashback = Integer.parseInt(value.toString());
-        if (cashback >= 1000000) {
-            throw new BuilderException("Cashback amount exceed.");
-        } else if (cashback < 0) {
-            throw new BuilderException("Cashback amount must not be less than zero.");
+    private static BigDecimal validateCashbackAmount(String value) throws BuilderException {
+        BigDecimal cashbackAmount = new BigDecimal(value);
+
+        BigDecimal amount1hun = new BigDecimal("100");
+        if (cashbackAmount == null) {
+            throw new BuilderException("Cashback Amount must not be less than or equal to 0.");
+        } else if ((cashbackAmount.compareTo(BigDecimal.ZERO) > 0) && (cashbackAmount.compareTo(amount1hun) <= 0)) {
+            cashbackAmount = cashbackAmount.multiply(new BigDecimal("100"));
+            cashbackAmount = cashbackAmount.setScale(0, BigDecimal.ROUND_HALF_EVEN);
+        } else if (cashbackAmount.compareTo(amount1hun) > 0) {
+            throw new BuilderException("Cashback Amount exceeded.");
+        } else {
+            throw new BuilderException("Invalid input amount.");
         }
+
+        return cashbackAmount;
     }
 
     private static BigDecimal validateAmount(BigDecimal amount) throws BuilderException {
         BigDecimal amount1mil = new BigDecimal("1000000");
 
         if (amount == null) {
-            throw new BuilderException("Amount can not be null.");
+            throw new BuilderException("Amount cannot be null.");
         } else if ((amount.compareTo(BigDecimal.ZERO) > 0) && (amount.compareTo(amount1mil) < 0)) {
             amount = amount.multiply(new BigDecimal("100"));
         } else if ((amount.compareTo(amount1mil) == 0) && (amount.compareTo(amount1mil) > 0)) {
-            throw new BuilderException("Amount exceed.");
+            throw new BuilderException("Amount exceeded.");
         } else {
             throw new BuilderException("Invalid input amount.");
         }

@@ -9,7 +9,7 @@ public class IngenicoTerminalReceiptResponse extends IngenicoBaseResponse implem
 
     public IngenicoTerminalReceiptResponse(byte[] buffer) {
         this.buffer = buffer;
-        rawData = new String(this.buffer, StandardCharsets.UTF_8);
+        rawData = new String(this.buffer, StandardCharsets.ISO_8859_1);
         String status = this.buffer.length > 0 ? "SUCCESS" : "FAILED";
         setStatus(status);
     }

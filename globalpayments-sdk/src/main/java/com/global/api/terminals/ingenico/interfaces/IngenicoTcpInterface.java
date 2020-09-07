@@ -9,7 +9,6 @@ import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.terminals.ingenico.responses.BroadcastMessage;
 import com.global.api.terminals.ingenico.variables.INGENICO_GLOBALS;
 import com.global.api.terminals.messaging.IBroadcastMessageInterface;
-import com.global.api.terminals.messaging.IMessageReceivedInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 
 import java.io.BufferedInputStream;
@@ -21,6 +20,7 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 
 public class IngenicoTcpInterface implements IDeviceCommInterface {
@@ -32,14 +32,12 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
     private byte[] _terminalResponse;
     private Thread dataReceiving;
     private boolean _isKeepAlive;
-    private boolean _isKeepAliveRunning;
     private Exception _receivingException;
     private BroadcastMessage _broadcastMessage;
     private boolean _isResponseNeeded = false;
 
     private IBroadcastMessageInterface onBroadcastMessage;
     private IMessageSentInterface onMessageSent;
-    private IMessageReceivedInterface onMessageReceived;
 
     public IngenicoTcpInterface(ITerminalConfiguration settings) throws ConfigurationException {
         try {
@@ -98,10 +96,6 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
                 throw new ConfigurationException("Error: Server is not running.");
             }
 
-            if (!_isKeepAlive) {
-                _socket.setSoTimeout(_settings.getTimeout());
-            }
-
             // Send request from builder.
             _output.write(buffer, 0, buffer.length);
             _output.flush();
@@ -113,9 +107,7 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
 
                 if (_receivingException != null) {
 
-                    if (!_isKeepAlive) {
-                        _socket.setSoTimeout(0);
-                    }
+                    _socket.setSoTimeout(0);
 
                     String exceptionMessage = _receivingException.getMessage();
                     _receivingException = null;
@@ -125,11 +117,9 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
 
                 if (_terminalResponse != null) {
 
-                    if (!_isKeepAlive) {
-                        _socket.setSoTimeout(0);
-                    }
+                    _socket.setSoTimeout(0);
+
                     _isResponseNeeded = false;
-                    onMessageReceived.messageReceived(TerminalUtilities.getString(_terminalResponse).substring(2));
                     return _terminalResponse;
                 }
             }
@@ -149,10 +139,6 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
         this.onBroadcastMessage = broadcastInterface;
     }
 
-    @Override
-    public void setMessageReceivedHandler(IMessageReceivedInterface messageReceivedInterface) {
-        this.onMessageReceived = messageReceivedInterface;
-    }
     //endregion
 
     private void initializeServer() throws ConfigurationException, IOException {
@@ -169,7 +155,6 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
                 _receivingException = null;
 
                 _isKeepAlive = false;
-                _isKeepAliveRunning = false;
 
             } else {
                 throw new ConfigurationException("Port is missing.");
@@ -209,6 +194,10 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
 
                     int readHeader = _input.read(headerBuffer, 0, headerBuffer.length);
 
+                    if (!_isKeepAlive && _isResponseNeeded) {
+                        _socket.setSoTimeout(_settings.getTimeout());
+                    }
+
                     if (readHeader == -1) {
                         _receivingException = new ApiException("Error: Terminal disconnected");
 //                        triggerSendBlock(new Exception("Error: Terminal disconnected"),7);
@@ -244,10 +233,7 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
 
                         _isKeepAlive = true;
 
-                        if (_isKeepAlive && !_isKeepAliveRunning) {
-                            _socket.setSoTimeout(_settings.getTimeout());
-                            _isKeepAliveRunning = true;
-                        }
+                        _socket.setSoTimeout(0);
 
                         byte[] kResponse = keepAliveResponse(dataBuffer);
                         _output.write(kResponse, 0, kResponse.length);
@@ -258,7 +244,15 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
                     headerBuffer = new byte[2];
                 }
             } catch (InterruptedIOException e) {
-                _receivingException = new ApiException("Error: Server Timeout");
+                try {
+                    if (_socket.getSoTimeout() > 0){
+                        _receivingException = new ApiException("Error: Server Timeout");
+                    } else {
+                        run();
+                    }
+                } catch (SocketException ex) {
+                    ex.printStackTrace();
+                }
 //                triggerSendBlock(e,5);
             } catch (Exception e) {
                 if (_isResponseNeeded || _isKeepAlive) {
