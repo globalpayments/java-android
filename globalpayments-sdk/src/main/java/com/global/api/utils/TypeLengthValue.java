@@ -12,7 +12,7 @@ import com.global.api.terminals.ingenico.variables.TransactionSubTypes;
 
 public class TypeLengthValue {
 
-    private byte[] data = new byte[0];
+    private byte[] _data = new byte[0];
     private TLVFormat format = TLVFormat.Standard;
 
     public TypeLengthValue() {
@@ -20,7 +20,7 @@ public class TypeLengthValue {
     }
 
     public TypeLengthValue(byte[] data) {
-        this.data = data;
+        this._data = data;
     }
 
     public TLVFormat getTLVFormat() {
@@ -32,16 +32,16 @@ public class TypeLengthValue {
     }
 
     public Object getValue(byte type, Class returnType, TLVFormat format) throws Exception {
-        if (data.length == 0) {
+        if (_data.length == 0) {
             throw new Exception("No data to parse.");
         }
 
-        String buffer = new String(data, StandardCharsets.UTF_8);
+        String buffer = new String(_data, StandardCharsets.UTF_8);
         String getBuffer = new String(new byte[] { type }, StandardCharsets.UTF_8);
         Integer index = buffer.indexOf(getBuffer);
 
         if (index >= 0) {
-            byte[] lengthBuffer = { data[index + 1], data[index + 2] };
+            byte[] lengthBuffer = { _data[index + 1], _data[index + 2] };
             Integer length = 0;
 
             if ((format != null && format == TLVFormat.Standard) || this.format == TLVFormat.Standard) {
@@ -52,10 +52,10 @@ public class TypeLengthValue {
                 throw new Exception("Unsupported TLV Format.");
             }
 
-            byte[] arrValue = Arrays.copyOfRange(data, index + 3, length + 3);
+            byte[] arrValue = Arrays.copyOfRange(_data, index + 3, length + 3);
             int endLength = index + length + 3;
-            data = Extensions.subArray(data, 0, index);
-            data = Extensions.subArray(data, endLength, data.length - endLength);
+            _data = Extensions.subArray(_data, 0, index);
+            _data = Extensions.subArray(_data, endLength, _data.length - endLength);
             String strValue = new String(arrValue, StandardCharsets.UTF_8);
 
             if (returnType == BigDecimal.class) {
