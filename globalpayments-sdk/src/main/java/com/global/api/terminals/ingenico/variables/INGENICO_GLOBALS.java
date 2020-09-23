@@ -8,4 +8,8 @@ public class INGENICO_GLOBALS {
     public static boolean KEEPALIVE = true;
     public final Integer IP_PORT = 18101;
     public final Integer RAW_RESPONSE_LENGTH = 80;
+    public final String XML_TAG = "?xml";
+    public final String ADDITIONAL_MSG_ROOT = "ADDITIONAL_DATA";
+    public final String TRANSFER_DATA_REQUEST = "DATA_TRANSFER";
+    public final String TRANSACTION_XML = "CREDIT_CARD_RECEIPT";
 }

@@ -4,6 +4,7 @@ import com.global.api.entities.enums.*;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.terminals.IRequestIdProvider;
+import com.global.api.terminals.ingenico.variables.DeviceMode;
 
 public interface ITerminalConfiguration {
     ConnectionModes getConnectionMode();
@@ -27,4 +28,6 @@ public interface ITerminalConfiguration {
     void setDeviceType(DeviceType type);
     IRequestIdProvider getRequestIdProvider();
     void setRequestIdProvider(IRequestIdProvider requestIdProvider);
+    DeviceMode getDeviceMode();
+    void setDeviceMode(DeviceMode deviceMode);
 }

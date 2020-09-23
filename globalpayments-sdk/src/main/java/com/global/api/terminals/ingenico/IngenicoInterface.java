@@ -1,5 +1,7 @@
 package com.global.api.terminals.ingenico;
 
+import android.util.Log;
+
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.terminals.abstractions.*;
@@ -15,11 +17,16 @@ import com.global.api.terminals.ingenico.variables.ReportTypes;
 import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.*;
+import com.global.api.terminals.messaging.IOnPayAtTableRequestInterface;
 
 import java.math.BigDecimal;
 
 public class IngenicoInterface extends DeviceInterface<IngenicoController> implements IDeviceInterface {
     private PaymentType paymentMethod = null;
+
+    IngenicoInterface(IngenicoController controller) {
+        super(controller);
+    }
 
     public PaymentType getPaymentMethod() {
         return paymentMethod;
@@ -29,16 +36,16 @@ public class IngenicoInterface extends DeviceInterface<IngenicoController> imple
         this.paymentMethod = paymentMethod;
     }
 
-    IngenicoInterface(IngenicoController controller) {
-        super(controller);
-    }
-
     public void setOnMessageSent(IMessageSentInterface onMessageSent) {
         this.onMessageSent = onMessageSent;
     }
 
     public void setOnBroadcastMessageReceived(IBroadcastMessageInterface onBroadcastReceived) {
         this.onBroadcastMessage = onBroadcastReceived;
+    }
+
+    public void setOnPayAtTableRequest(IOnPayAtTableRequestInterface onPayAtTableRequest) {
+        this.onPayAtTableRequest = onPayAtTableRequest;
     }
 
     @Override
@@ -82,6 +89,11 @@ public class IngenicoInterface extends DeviceInterface<IngenicoController> imple
     }
 
     @Override
+    public TerminalAuthBuilder payAtTableResponse() throws ApiException {
+        return super.payAtTableResponse();
+    }
+
+    @Override
     public IDeviceResponse duplicate() throws ApiException {
         StringBuilder sb = new StringBuilder();
         sb.append(new INGENICO_REQ_CMD().REQUEST_MESSAGE);
@@ -111,7 +123,6 @@ public class IngenicoInterface extends DeviceInterface<IngenicoController> imple
             throw new UnsupportedTransactionException("Amount can't be null");
         }
     }
-
 
     @Override
     public IDeviceResponse getTerminalConfiguration() throws ApiException {

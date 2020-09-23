@@ -6,6 +6,7 @@ import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.serviceConfigs.Configuration;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.terminals.ingenico.IngenicoController;
+import com.global.api.terminals.ingenico.variables.DeviceMode;
 import com.global.api.utils.StringUtils;
 
 public class ConnectionConfig extends Configuration implements ITerminalConfiguration {
@@ -18,6 +19,7 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
     private String port;
     private DeviceType deviceType;
     private IRequestIdProvider requestIdProvider;
+    private DeviceMode deviceMode;
 
     public ConnectionModes getConnectionMode() {
         return connectionMode;
@@ -72,6 +74,14 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
     }
     public void setRequestIdProvider(IRequestIdProvider requestIdProvider) {
         this.requestIdProvider = requestIdProvider;
+    }
+
+    public DeviceMode getDeviceMode() {
+        return deviceMode;
+    }
+
+    public void setDeviceMode(DeviceMode deviceMode) {
+        this.deviceMode = deviceMode;
     }
 
     public ConnectionConfig(){

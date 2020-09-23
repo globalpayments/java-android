@@ -12,8 +12,11 @@ import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.terminals.DeviceController;
 import com.global.api.terminals.abstractions.ITerminalResponse;
+import com.global.api.terminals.ingenico.variables.PATPaymentMode;
+import com.global.api.terminals.ingenico.variables.PATResponseType;
 import com.global.api.terminals.ingenico.variables.PaymentMode;
 import com.global.api.terminals.ingenico.variables.TaxFreeType;
+import com.global.api.terminals.ingenico.variables.TransactionStatus;
 
 import java.math.BigDecimal;
 import java.util.EnumSet;
@@ -41,6 +44,10 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     private String tableNumber;
     private PaymentMode paymentMode;
     private TaxFreeType taxFreeType;
+    private String xmlPath;
+    private TransactionStatus transactionStatus;
+    private PATResponseType pattResponseType;
+    private PATPaymentMode pattPaymentMode;
 
 //    public Address getAddress() {
 //        return address;
@@ -125,6 +132,24 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     public TaxFreeType getTaxFreeType() {
         return taxFreeType;
     }
+
+    public String getXMLPath() {
+        return xmlPath;
+    }
+
+    public TransactionStatus getTransactionStatus() {
+        return transactionStatus;
+    }
+
+    public PATResponseType getPATTResponseType() {
+        return pattResponseType;
+    }
+
+    public PATPaymentMode getPATTPaymentMode() {
+        return pattPaymentMode;
+    }
+
+
 
 //    public TerminalAuthBuilder withAddress(Address address) {
 //        this.address = address;
@@ -245,6 +270,26 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
         return this;
     }
 
+    public TerminalAuthBuilder withPATTPaymentMode(PATPaymentMode pattPaymentMode) {
+        this.pattPaymentMode = pattPaymentMode;
+        return this;
+    }
+
+    public TerminalAuthBuilder withPATTResponseType(PATResponseType pattResponseType) {
+        this.pattResponseType = pattResponseType;
+        return this;
+    }
+
+    public TerminalAuthBuilder withXML(String xmlPath) {
+        this.xmlPath = xmlPath;
+        return this;
+    }
+
+    public TerminalAuthBuilder withTransactionStatus(TransactionStatus transactionStatus) {
+        this.transactionStatus = transactionStatus;
+        return this;
+    }
+
     public TerminalAuthBuilder(TransactionType type, PaymentMethodType paymentType) {
         super(type, paymentType);
     }
@@ -274,5 +319,9 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
                 .isEqualTo(false);
         this.validations.of(PaymentMethodType.EBT).with(TransactionType.BenefitWithdrawal).check("allowDuplicates")
                 .isEqualTo(false);
+
+        //Pinalagay ni sir Steve sa testing namin kahapon
+        this.validations.of(TransactionType.PayAtTable).with(PaymentMethodType.Other).when("xmlPath").isNull()
+                .check("amount").isNull();
     }
 }

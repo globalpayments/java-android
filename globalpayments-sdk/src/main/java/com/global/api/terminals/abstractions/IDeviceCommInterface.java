@@ -4,6 +4,7 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.terminals.messaging.IOnPayAtTableRequestInterface;
 
 public interface IDeviceCommInterface {
     void connect() throws ConfigurationException;
@@ -15,4 +16,6 @@ public interface IDeviceCommInterface {
     void setMessageSentHandler(IMessageSentInterface messageInterface);
 
     void setBroadcastMessageHandler(IBroadcastMessageInterface broadcastInterface);
+
+    void setOnPayAtTableRequestHandler(IOnPayAtTableRequestInterface onPayAtTable);
 }

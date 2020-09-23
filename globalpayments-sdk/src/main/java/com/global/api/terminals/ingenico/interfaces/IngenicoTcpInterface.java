@@ -1,15 +1,20 @@
 package com.global.api.terminals.ingenico.interfaces;
 
+import android.util.Log;
+
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.IDeviceCommInterface;
 import com.global.api.terminals.abstractions.IDeviceMessage;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
+import com.global.api.terminals.ingenico.pat.PATRequest;
 import com.global.api.terminals.ingenico.responses.BroadcastMessage;
+import com.global.api.terminals.ingenico.variables.DeviceMode;
 import com.global.api.terminals.ingenico.variables.INGENICO_GLOBALS;
 import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.terminals.messaging.IOnPayAtTableRequestInterface;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -35,14 +40,19 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
     private Exception _receivingException;
     private BroadcastMessage _broadcastMessage;
     private boolean _isResponseNeeded = false;
+    private DataOutputStream _out;
+    private DataInputStream _in;
+
+    private boolean _readData;
 
     private IBroadcastMessageInterface onBroadcastMessage;
     private IMessageSentInterface onMessageSent;
+    private IOnPayAtTableRequestInterface _onPayAtTableRequest;
 
     public IngenicoTcpInterface(ITerminalConfiguration settings) throws ConfigurationException {
         try {
             this._settings = settings;
-
+            this._socket = new Socket();
             connect();
 
         } catch (ConfigurationException e) {
@@ -72,6 +82,7 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
     public void disconnect() {
         try {
             if (_serverSocket != null || !_serverSocket.isClosed()) {
+                _readData = false;
                 _input.close();
                 _output.close();
                 _socket.close();
@@ -137,6 +148,11 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
     @Override
     public void setBroadcastMessageHandler(IBroadcastMessageInterface broadcastInterface) {
         this.onBroadcastMessage = broadcastInterface;
+    }
+
+    @Override
+    public void setOnPayAtTableRequestHandler(IOnPayAtTableRequestInterface onPayAtTable) {
+        this._onPayAtTableRequest = onPayAtTable;
     }
 
     //endregion
@@ -225,23 +241,40 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
                     byte[] dataBuffer = new byte[dataLength];
                     System.arraycopy(tempBuffer, 0, dataBuffer, 0, dataLength);
 
-                    if (isBroadcast(dataBuffer)) {
-                        _broadcastMessage = new BroadcastMessage(dataBuffer);
-                        onBroadcastMessage.broadcastReceived(_broadcastMessage.getCode(),
-                                _broadcastMessage.getMessage());
-                    } else if (isKeepAlive(dataBuffer) && new INGENICO_GLOBALS().KEEPALIVE) {
+                    if (_settings.getDeviceMode() == DeviceMode.PAY_AT_TABLE) {
+                        PATRequest patRequest = new PATRequest(dataBuffer);
+                        if (_onPayAtTableRequest != null) {
+                            _onPayAtTableRequest.onPayAtTableRequest(patRequest);
+                            Log.i("IngenicoTCPInterface", "Dumaan Dito DataReceived");
 
-                        _isKeepAlive = true;
-
-                        _socket.setSoTimeout(0);
-
-                        byte[] kResponse = keepAliveResponse(dataBuffer);
-                        _output.write(kResponse, 0, kResponse.length);
-                        _output.flush();
+                        }
                     } else {
-                        _terminalResponse = dataBuffer;
+                        if (!_readData) {
+                            break;
+                        }
+
+                        if (_receivingException != null) {
+                            dataBuffer = null;
+                        }
+
+                        if (isBroadcast(dataBuffer)) {
+                            _broadcastMessage = new BroadcastMessage(dataBuffer);
+                            onBroadcastMessage.broadcastReceived(_broadcastMessage.getCode(),
+                                    _broadcastMessage.getMessage());
+                        } else if (isKeepAlive(dataBuffer) && new INGENICO_GLOBALS().KEEPALIVE) {
+
+                            _isKeepAlive = true;
+
+                            _socket.setSoTimeout(0);
+
+                            byte[] kResponse = keepAliveResponse(dataBuffer);
+                            _output.write(kResponse, 0, kResponse.length);
+                            _output.flush();
+                        } else {
+                            _terminalResponse = dataBuffer;
+                        }
+                        headerBuffer = new byte[2];
                     }
-                    headerBuffer = new byte[2];
                 }
             } catch (InterruptedIOException e) {
                 try {

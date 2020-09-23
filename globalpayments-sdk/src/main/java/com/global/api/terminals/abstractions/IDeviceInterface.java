@@ -13,6 +13,7 @@ import com.global.api.terminals.ingenico.variables.ReceiptType;
 import com.global.api.terminals.ingenico.variables.ReportTypes;
 import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.terminals.messaging.IOnPayAtTableRequestInterface;
 //import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 //import com.global.api.terminals.pax.responses.SAFSummaryReport;
 //import com.global.api.terminals.pax.responses.SAFUploadResponse;
@@ -22,6 +23,7 @@ import java.math.BigDecimal;
 public interface IDeviceInterface extends IDisposable {
     void setOnMessageSent(IMessageSentInterface onMessageSent);
     void setOnBroadcastMessageReceived(IBroadcastMessageInterface onBroadcastReceived);
+    void setOnPayAtTableRequest(IOnPayAtTableRequestInterface onPayAtTableRequest);
 
     // admin calls
     IDeviceResponse disableHostResponseBeep() throws ApiException;
@@ -102,4 +104,6 @@ public interface IDeviceInterface extends IDisposable {
     // transaction management
     IDeviceResponse duplicate() throws ApiException;
     TerminalManageBuilder reverse(BigDecimal amount) throws ApiException;
+
+    TerminalAuthBuilder payAtTableResponse() throws ApiException;
 }

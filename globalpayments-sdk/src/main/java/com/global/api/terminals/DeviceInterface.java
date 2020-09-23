@@ -1,5 +1,7 @@
 package com.global.api.terminals;
 
+import android.util.Log;
+
 import java.math.BigDecimal;
 
 import com.global.api.entities.enums.PaymentMethodType;
@@ -20,10 +22,13 @@ import com.global.api.terminals.abstractions.IInitializeResponse;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.builders.TerminalReportBuilder;
+import com.global.api.terminals.ingenico.pat.PATRequest;
 import com.global.api.terminals.ingenico.variables.ReceiptType;
 import com.global.api.terminals.ingenico.variables.ReportTypes;
+import com.global.api.terminals.ingenico.variables.TransactionStatus;
 import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.terminals.messaging.IOnPayAtTableRequestInterface;
 //import com.global.api.terminals.pax.responses.SAFDeleteResponse;
 //import com.global.api.terminals.pax.responses.SAFSummaryReport;
 //import com.global.api.terminals.pax.responses.SAFUploadResponse;
@@ -34,6 +39,7 @@ public abstract class DeviceInterface<T extends DeviceController> implements IDe
 
     public IMessageSentInterface onMessageSent;
     public IBroadcastMessageInterface onBroadcastMessage;
+    public IOnPayAtTableRequestInterface onPayAtTableRequest;
 
     public void setOnMessageSent(IMessageSentInterface onMessageSent) {
         this.onMessageSent = onMessageSent;
@@ -41,6 +47,10 @@ public abstract class DeviceInterface<T extends DeviceController> implements IDe
 
     public void setOnBroadcastMessageReceived(IBroadcastMessageInterface onBroadcastMessage) {
         this.onBroadcastMessage = onBroadcastMessage;
+    }
+
+    public void setOnPayAtTableRequest(IOnPayAtTableRequestInterface onPayAtTableRequest) {
+        this.onPayAtTableRequest = onPayAtTableRequest;
     }
 
     public DeviceInterface(T controller) {
@@ -56,6 +66,15 @@ public abstract class DeviceInterface<T extends DeviceController> implements IDe
             public void broadcastReceived(String code, String message) {
                 if (onBroadcastMessage != null)
                     onBroadcastMessage.broadcastReceived(code, message);
+            }
+        });
+
+        _controller.setOnPayAtTableRequestHandler(new IOnPayAtTableRequestInterface() {
+            public void onPayAtTableRequest(PATRequest payAtTableRequest) {
+                if (onPayAtTableRequest != null) {
+                    onPayAtTableRequest.onPayAtTableRequest(payAtTableRequest);
+                    Log.i("DeviceInterface", "Dumaan Dito PAT Request Handler");
+                }
             }
         });
 
@@ -280,6 +299,12 @@ public abstract class DeviceInterface<T extends DeviceController> implements IDe
 
     public IDeviceResponse getTerminalStatus() throws ApiException {
         throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
+    }
+
+    public TerminalAuthBuilder payAtTableResponse() throws ApiException {
+        Log.i("Device Interface", "Dumaan Dito PayAtTableResponse");
+        return new TerminalAuthBuilder(TransactionType.PayAtTable, PaymentMethodType.Other).withReferenceNumber(00)
+                .withTransactionStatus(TransactionStatus.SUCCESS).withCurrencyCode("826");
     }
 
     public void dispose() {

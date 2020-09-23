@@ -1,10 +1,30 @@
 package com.global.api.terminals.ingenico;
 
+import android.os.Build;
+import android.util.Log;
+
+import androidx.annotation.RequiresApi;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.text.DecimalFormat;
+
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.terminals.DeviceController;
+import com.global.api.terminals.DeviceMessage;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.IDeviceCommInterface;
 import com.global.api.terminals.abstractions.IDeviceInterface;
@@ -20,17 +40,17 @@ import com.global.api.terminals.ingenico.responses.IngenicoTerminalReceiptRespon
 import com.global.api.terminals.ingenico.responses.IngenicoTerminalReportResponse;
 import com.global.api.terminals.ingenico.responses.IngenicoTerminalResponse;
 import com.global.api.terminals.ingenico.responses.ReverseResponse;
+import com.global.api.terminals.ingenico.variables.DeviceMode;
 import com.global.api.terminals.ingenico.variables.INGENICO_REQ_CMD;
+import com.global.api.terminals.ingenico.variables.PATResponseType;
 import com.global.api.terminals.ingenico.variables.ParseFormat;
 import com.global.api.terminals.ingenico.variables.PaymentMode;
 import com.global.api.terminals.ingenico.variables.PaymentType;
 import com.global.api.utils.Extensions;
 
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-
 public class IngenicoController extends DeviceController {
     private IDeviceInterface _device;
+    private String xmlContent2;
 
     public IngenicoController(ITerminalConfiguration settings) throws ConfigurationException {
         super(settings);
@@ -49,6 +69,8 @@ public class IngenicoController extends DeviceController {
         switch (settings.getConnectionMode()) {
             case TCP_IP_SERVER:
                 return new IngenicoTcpInterface(settings);
+            case PAY_AT_TABLE:
+                return null;
             default:
                 throw new UnsupportedOperationException();
         }
@@ -80,8 +102,59 @@ public class IngenicoController extends DeviceController {
 
     @Override
     public ITerminalResponse processTransaction(TerminalAuthBuilder builder) throws ApiException {
-        IDeviceMessage request = buildRequestMessage(builder);
+        Log.i("IC", "IC:");
+        IDeviceMessage request = null;
+        if (settings.getDeviceMode() == DeviceMode.PAY_AT_TABLE) {
+            if (builder.getXMLPath() != null) {
+                Log.i("TAG", "XML PATH HERE: " + builder.getXMLPath());
+                request = new DeviceMessage(getXMLContent(builder.getXMLPath()));
+            } else {
+                request = buildPATTResponseMessage(builder);
+            }
+        } else {
+            request = buildRequestMessage(builder);
+        }
         return doRequest(request);
+    }
+
+    private byte[] getXMLContent(String xmlPath) throws BuilderException {
+        byte[] result;
+
+        try {
+            if (xmlPath.isEmpty()) {
+                throw new BuilderException("XML Path is Empty");
+            }
+
+            byte[] xmlByteArr = new byte[0];
+
+//            xmlByteArr = Files.readAllBytes(Paths.get(xmlPath));
+//            String xmlContent = TerminalUtilities.calculateHeader(xmlByteArr)
+//                    + new String(xmlByteArr, StandardCharsets.UTF_8);
+//            result = xmlContent.getBytes(StandardCharsets.UTF_8);
+//
+//            Log.i("PROCESS TRANSAC:", "DUMAAN DITO" + xmlContent);
+
+            File file = new File(xmlPath);
+            int size = (int) file.length();
+            byte[] bytes = new byte[size];
+            try {
+                BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
+                buf.read(bytes, 0, bytes.length);
+                Log.i("PROCESS TRANSAC2:", "DUMAAN DITO2" + buf.toString());
+                buf.close();
+            } catch (FileNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        } catch (Exception e) {
+            throw new BuilderException(e.getMessage());
+        }
+
+//        return result;
+        return null;
     }
 
     private IDeviceMessage buildReportTransaction(TerminalReportBuilder builder) throws BuilderException {
@@ -193,13 +266,32 @@ public class IngenicoController extends DeviceController {
         return TerminalUtilities.buildIngenicoRequest(message.toString(), settings.getConnectionMode());
     }
 
+    private IDeviceMessage buildPATTResponseMessage(TerminalAuthBuilder builder) throws BuilderException {
+        Integer referenceNumber = builder.getReferenceNumber();
+        Integer transactionStatus = builder.getTransactionStatus().getTransactionStatus();
+        BigDecimal amount = builder.getAmount();
+        Integer paymentMode = builder.getPATTPaymentMode().getValue();
+        String currencyCode = builder.getCurrencyCode();
+        String privateData = PATResponseType.getEnumName(builder.getPATTResponseType().getValue()).toString();
+        amount = validateAmount(amount);
+
+        DecimalFormat decimalFormat = new DecimalFormat("00000000");
+        StringBuilder message = new StringBuilder();
+        message.append(referenceNumber);
+        message.append(transactionStatus);
+        message.append(decimalFormat.format(amount));
+        message.append(paymentMode);
+        message.append(currencyCode);
+        message.append(privateData);
+        Log.i("MESSAGE" , decimalFormat.format(amount));
+        return TerminalUtilities.buildIngenicoRequest(message.toString(), settings.getConnectionMode());
+    }
+
     private static boolean isObjectNullOrEmpty(Object value) {
         boolean response = false;
 
         if (value == null || value.toString().isEmpty()) {
             response = true;
-        } else {
-            response = false;
         }
 
         return response;

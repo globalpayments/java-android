@@ -14,8 +14,10 @@ import com.global.api.terminals.abstractions.ITerminalResponse;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.builders.TerminalReportBuilder;
+import com.global.api.terminals.ingenico.pat.PATRequest;
 import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
+import com.global.api.terminals.messaging.IOnPayAtTableRequestInterface;
 
 public abstract class DeviceController implements IDisposable {
     protected ITerminalConfiguration settings;
@@ -43,6 +45,7 @@ public abstract class DeviceController implements IDisposable {
 
     private IMessageSentInterface onMessageSent;
     private IBroadcastMessageInterface onBroadcastMessage;
+    private IOnPayAtTableRequestInterface onPayAtTableRequest;
 
     void setOnMessageSentHandler(IMessageSentInterface onMessageSent) {
         this.onMessageSent = onMessageSent;
@@ -50,6 +53,10 @@ public abstract class DeviceController implements IDisposable {
 
     void setOnBroadcastMessageHandler(IBroadcastMessageInterface onBroadcastMessage) {
         this.onBroadcastMessage = onBroadcastMessage;
+    }
+
+    void setOnPayAtTableRequestHandler(IOnPayAtTableRequestInterface onPayAtTableRequest) {
+        this.onPayAtTableRequest = onPayAtTableRequest;
     }
 
     public DeviceController(ITerminalConfiguration settings) throws ConfigurationException {
@@ -69,6 +76,14 @@ public abstract class DeviceController implements IDisposable {
             public void broadcastReceived(String code, String message) {
                 if (onBroadcastMessage != null) {
                     onBroadcastMessage.broadcastReceived(code, message);
+                }
+            }
+        });
+
+        _connector.setOnPayAtTableRequestHandler(new IOnPayAtTableRequestInterface() {
+            public void onPayAtTableRequest(PATRequest payAtTableRequest) {
+                if (onPayAtTableRequest != null) {
+                    onPayAtTableRequest.onPayAtTableRequest(payAtTableRequest);
                 }
             }
         });
