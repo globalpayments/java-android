@@ -1,6 +1,8 @@
 package com.global.api.terminals.ingenico;
 
+import android.content.res.AssetManager;
 import android.os.Build;
+import android.provider.MediaStore;
 import android.util.Log;
 
 import androidx.annotation.RequiresApi;
@@ -19,6 +21,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 
+import com.global.api.entities.enums.ConnectionModes;
+import com.global.api.entities.enums.ControlCodes;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
@@ -42,10 +46,12 @@ import com.global.api.terminals.ingenico.responses.IngenicoTerminalResponse;
 import com.global.api.terminals.ingenico.responses.ReverseResponse;
 import com.global.api.terminals.ingenico.variables.DeviceMode;
 import com.global.api.terminals.ingenico.variables.INGENICO_REQ_CMD;
+import com.global.api.terminals.ingenico.variables.INGENICO_RESP;
 import com.global.api.terminals.ingenico.variables.PATResponseType;
 import com.global.api.terminals.ingenico.variables.ParseFormat;
 import com.global.api.terminals.ingenico.variables.PaymentMode;
 import com.global.api.terminals.ingenico.variables.PaymentType;
+import com.global.api.terminals.ingenico.variables.TransactionStatus;
 import com.global.api.utils.Extensions;
 
 public class IngenicoController extends DeviceController {
@@ -68,9 +74,8 @@ public class IngenicoController extends DeviceController {
     public IDeviceCommInterface configureConnector() throws ConfigurationException {
         switch (settings.getConnectionMode()) {
             case TCP_IP_SERVER:
-                return new IngenicoTcpInterface(settings);
             case PAY_AT_TABLE:
-                return null;
+                return new IngenicoTcpInterface(settings);
             default:
                 throw new UnsupportedOperationException();
         }
@@ -102,11 +107,9 @@ public class IngenicoController extends DeviceController {
 
     @Override
     public ITerminalResponse processTransaction(TerminalAuthBuilder builder) throws ApiException {
-        Log.i("IC", "IC:");
         IDeviceMessage request = null;
-        if (settings.getDeviceMode() == DeviceMode.PAY_AT_TABLE) {
+        if (settings.getConnectionMode() == ConnectionModes.PAY_AT_TABLE) {
             if (builder.getXMLPath() != null) {
-                Log.i("TAG", "XML PATH HERE: " + builder.getXMLPath());
                 request = new DeviceMessage(getXMLContent(builder.getXMLPath()));
             } else {
                 request = buildPATTResponseMessage(builder);
@@ -127,34 +130,19 @@ public class IngenicoController extends DeviceController {
 
             byte[] xmlByteArr = new byte[0];
 
-//            xmlByteArr = Files.readAllBytes(Paths.get(xmlPath));
-//            String xmlContent = TerminalUtilities.calculateHeader(xmlByteArr)
-//                    + new String(xmlByteArr, StandardCharsets.UTF_8);
-//            result = xmlContent.getBytes(StandardCharsets.UTF_8);
-//
-//            Log.i("PROCESS TRANSAC:", "DUMAAN DITO" + xmlContent);
-
-            File file = new File(xmlPath);
-            int size = (int) file.length();
-            byte[] bytes = new byte[size];
-            try {
-                BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
-                buf.read(bytes, 0, bytes.length);
-                Log.i("PROCESS TRANSAC2:", "DUMAAN DITO2" + buf.toString());
-                buf.close();
-            } catch (FileNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                xmlByteArr = Files.readAllBytes(Paths.get(xmlPath));
             }
+
+            String xmlContent = TerminalUtilities.calculateHeader(xmlByteArr)
+                    + new String(xmlByteArr, StandardCharsets.UTF_8);
+            result = xmlContent.getBytes(StandardCharsets.UTF_8);
+
         } catch (Exception e) {
             throw new BuilderException(e.getMessage());
         }
 
-//        return result;
-        return null;
+        return result;
     }
 
     private IDeviceMessage buildReportTransaction(TerminalReportBuilder builder) throws BuilderException {
@@ -267,23 +255,40 @@ public class IngenicoController extends DeviceController {
     }
 
     private IDeviceMessage buildPATTResponseMessage(TerminalAuthBuilder builder) throws BuilderException {
-        Integer referenceNumber = builder.getReferenceNumber();
-        Integer transactionStatus = builder.getTransactionStatus().getTransactionStatus();
-        BigDecimal amount = builder.getAmount();
-        Integer paymentMode = builder.getPATTPaymentMode().getValue();
-        String currencyCode = builder.getCurrencyCode();
-        String privateData = PATResponseType.getEnumName(builder.getPATTResponseType().getValue()).toString();
-        amount = validateAmount(amount);
-
-        DecimalFormat decimalFormat = new DecimalFormat("00000000");
         StringBuilder message = new StringBuilder();
-        message.append(referenceNumber);
-        message.append(transactionStatus);
-        message.append(decimalFormat.format(amount));
-        message.append(paymentMode);
-        message.append(currencyCode);
-        message.append(privateData);
-        Log.i("MESSAGE" , decimalFormat.format(amount));
+
+        // PAT Functionalities
+        if (builder.getXMLPath() != null) {
+            byte[] content = getXMLContent(builder.getXMLPath());
+            String xml = new String(content, StandardCharsets.ISO_8859_1)
+                    .substring(3);
+            message.append(xml);
+        } else {
+            Integer referenceNumber = builder.getReferenceNumber();
+            Integer transactionStatus = builder.getTransactionStatus().getTransactionStatus();
+            BigDecimal amount = builder.getAmount();
+            Integer paymentMode = builder.getPATTPaymentMode().getValue();
+            String currencyCode = builder.getCurrencyCode();
+            String privateData = PATResponseType.getEnumName(builder.getPATTResponseType().getValue()).toString();
+            amount = validateAmount(amount);
+
+            if (privateData.length() < 10) {
+                for (int i = privateData.length(); i < 10; i++) {
+                    privateData += (char) ControlCodes.SP.getByte();
+                }
+            }
+
+            DecimalFormat decimalFormat = new DecimalFormat("00000000");
+            message.append(referenceNumber);
+            message.append(transactionStatus);
+            message.append(decimalFormat.format(amount));
+            message.append(paymentMode);
+            message.append(currencyCode);
+            message.append(privateData);
+
+            Log.i("MESSAGE" , decimalFormat.format(amount));
+        }
+
         return TerminalUtilities.buildIngenicoRequest(message.toString(), settings.getConnectionMode());
     }
 

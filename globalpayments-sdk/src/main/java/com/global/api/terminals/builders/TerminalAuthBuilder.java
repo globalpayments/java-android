@@ -321,7 +321,9 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
                 .isEqualTo(false);
 
         //Pinalagay ni sir Steve sa testing namin kahapon
-        this.validations.of(TransactionType.PayAtTable).with(PaymentMethodType.Other).when("xmlPath").isNull()
-                .check("amount").isNull();
+//        this.validations.of(TransactionType.PayAtTable).with(PaymentMethodType.Other).when("xmlPath").isNotNull()
+//                .check("amount").isNull();
+        this.validations.of(PaymentMethodType.Other).with(TransactionType.PayAtTable).when("amount").isNull()
+                .check("xmlPath").isNotNull();
     }
 }

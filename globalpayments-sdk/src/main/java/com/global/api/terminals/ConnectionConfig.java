@@ -76,14 +76,14 @@ public class ConnectionConfig extends Configuration implements ITerminalConfigur
         this.requestIdProvider = requestIdProvider;
     }
 
-    public DeviceMode getDeviceMode() {
-        return deviceMode;
-    }
-
-    public void setDeviceMode(DeviceMode deviceMode) {
-        this.deviceMode = deviceMode;
-    }
-
+//    public DeviceMode getDeviceMode() {
+//        return deviceMode;
+//    }
+//
+//    public void setDeviceMode(DeviceMode deviceMode) {
+//        this.deviceMode = deviceMode;
+//    }
+    
     public ConnectionConfig(){
         timeout = 30000;
     }

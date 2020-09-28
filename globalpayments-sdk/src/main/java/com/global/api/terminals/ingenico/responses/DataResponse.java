@@ -33,7 +33,7 @@ public class DataResponse {
         return _authCode != null ? _authCode : "";
     }
 
-    private void setAuthorizationCode(String value) {
+    public void setAuthorizationCode(String value) {
         _authCode = value;
     }
 

@@ -12,4 +12,5 @@ public class INGENICO_GLOBALS {
     public final String ADDITIONAL_MSG_ROOT = "ADDITIONAL_DATA";
     public final String TRANSFER_DATA_REQUEST = "DATA_TRANSFER";
     public final String TRANSACTION_XML = "CREDIT_CARD_RECEIPT";
+    public final String EPOS_TABLE_LIST = "EPOS_TABLE_LIST";
 }

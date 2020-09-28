@@ -303,8 +303,9 @@ public abstract class DeviceInterface<T extends DeviceController> implements IDe
 
     public TerminalAuthBuilder payAtTableResponse() throws ApiException {
         Log.i("Device Interface", "Dumaan Dito PayAtTableResponse");
-        return new TerminalAuthBuilder(TransactionType.PayAtTable, PaymentMethodType.Other).withReferenceNumber(00)
-                .withTransactionStatus(TransactionStatus.SUCCESS).withCurrencyCode("826");
+        return new TerminalAuthBuilder(TransactionType.PayAtTable, PaymentMethodType.Other);
+//        return new TerminalAuthBuilder(TransactionType.PayAtTable, PaymentMethodType.Other).withReferenceNumber(00)
+//                .withTransactionStatus(TransactionStatus.SUCCESS).withCurrencyCode("826");
     }
 
     public void dispose() {

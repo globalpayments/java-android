@@ -29,6 +29,7 @@ public class PATRequest {
     private String _terminalId;
     private String _terminalCurrency;
     private String _rawData;
+    private String _xmlData;
 
     public PATRequest(byte[] buffer) throws ApiException {
         parseRequest(buffer);
@@ -58,6 +59,10 @@ public class PATRequest {
         return _transactionOutcome;
     }
 
+    public String getXMLData() {
+        return _xmlData;
+    }
+
     public PATRequestType getRequestType() {
         return _requestType;
     }
@@ -68,20 +73,24 @@ public class PATRequest {
                 _rawData = new String(buffer, StandardCharsets.UTF_8);
 
                 if (_rawData.contains(new INGENICO_GLOBALS().XML_TAG)) {
+                    _rawData = new String(_rawData.getBytes(), StandardCharsets.ISO_8859_1);
+
                     if (_rawData.endsWith(">")) {
                         char[] xmlContentArr = _rawData.toCharArray();
 
                         for (int i = _rawData.length() - 1; i <= _rawData.length(); i++) {
                             if (xmlContentArr[i] == '>') {
-                                _rawData = _rawData.substring(0, (i+1));
+                                _xmlData = _rawData.substring(0, (i+1));
                                 break;
                             }
                         }
+                    } else {
+                        _xmlData = _rawData;
                     }
 
                     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
                     DocumentBuilder builder = factory.newDocumentBuilder();
-                    Document doc = builder.parse(new InputSource(new StringReader(_rawData)));
+                    Document doc = builder.parse(new InputSource(new StringReader(_xmlData)));
 
                     String rootTag = doc.getDocumentElement().getNodeName();
                     if (rootTag.equals(new INGENICO_GLOBALS().ADDITIONAL_MSG_ROOT)) {
@@ -106,10 +115,12 @@ public class PATRequest {
                         } else {
                             throw new ApiException("First child node is not an element");
                         }
+                    } else {
+                        throw new ApiException("There root tag of the xml cannot recognize");
                     }
                 } else {
                     // Message Frame 2 Format
-                    if (_rawData.length() >= 80) {
+                    if (buffer.length >= 80) {
                         _requestType = PATRequestType.TRANSACTION_OUTCOME;
                         _transactionOutcome = new TransactionOutcome(buffer);
                     } else {
@@ -118,16 +129,27 @@ public class PATRequest {
                         _requestType = PATRequestType.getEnumName(type);
 
                         String privData = _rawData.substring(16, _rawData.length());
-                        _tlv = new TypeLengthValue(privData.getBytes());
+                        if (privData.length() < 55) {
+                            switch (_requestType) {
+                                case TABLE_LOCK:
+                                case TABLE_UNLOCK:
+                                    _tableNumber = privData;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        } else {
+                            _tlv = new TypeLengthValue(privData.getBytes());
 
-                        _waiterId = (String) _tlv.getValue((byte) PATPrivateDataCode.WaiterId.getValue(), String.class,
-                                null);
-                        _tableNumber = (String) _tlv.getValue((byte) PATPrivateDataCode.TableId.getValue(),
-                                String.class, null);
-                        _terminalId = (String) _tlv.getValue((byte) PATPrivateDataCode.TID.getValue(), String.class,
-                                null);
-                        _terminalCurrency = (String) _tlv
-                                .getValue((byte) PATPrivateDataCode.TerminalCurrency.getValue(), String.class, null);
+                            _waiterId = (String) _tlv.getValue((byte) PATPrivateDataCode.WaiterId.getValue(),
+                                    String.class, null);
+                            _tableNumber = (String) _tlv.getValue((byte) PATPrivateDataCode.TableId.getValue(),
+                                    String.class, null);
+                            _terminalId = (String) _tlv.getValue((byte) PATPrivateDataCode.TID.getValue(),
+                                    String.class, null);
+                            _terminalCurrency = (String) _tlv.getValue(
+                                    (byte) PATPrivateDataCode.TerminalCurrency.getValue(), String.class, null);
+                        }
                     }
                 }
             }

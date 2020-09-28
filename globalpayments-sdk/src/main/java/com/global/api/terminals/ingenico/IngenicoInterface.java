@@ -131,7 +131,7 @@ public class IngenicoInterface extends DeviceInterface<IngenicoController> imple
         sb.append(new INGENICO_REQ_CMD().CALL_TMS);
 
         byte[] response = _controller.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
-        return new IngenicoTerminalResponse(response);
+        return new IngenicoTerminalResponse(response, ParseFormat.Transaction);
     }
 
     @Override
@@ -141,7 +141,7 @@ public class IngenicoInterface extends DeviceInterface<IngenicoController> imple
         sb.append(new INGENICO_REQ_CMD().LOGON);
 
         byte[] response = _controller.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
-        return new IngenicoTerminalResponse(response);
+        return new IngenicoTerminalResponse(response, ParseFormat.Transaction);
     }
 
     @Override
@@ -161,7 +161,7 @@ public class IngenicoInterface extends DeviceInterface<IngenicoController> imple
         sb.append(new INGENICO_REQ_CMD().RESET);
 
         byte[] response = _controller.send(TerminalUtilities.buildIngenicoRequest(sb.toString(), _controller.getConnectionModes()));
-        return new IngenicoTerminalResponse(response);
+        return new IngenicoTerminalResponse(response, ParseFormat.Transaction);
     }
 
     @Override

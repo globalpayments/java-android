@@ -3,8 +3,10 @@ package com.global.api.terminals.ingenico.responses;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 
+import com.global.api.entities.enums.ApplicationCryptogramType;
 import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.terminals.abstractions.ITerminalResponse;
+import com.global.api.terminals.ingenico.variables.PaymentMethod;
 import com.global.api.terminals.ingenico.variables.TransactionStatus;
 import com.global.api.terminals.ingenico.variables.TransactionSubTypes;
 import com.global.api.utils.Extensions;
@@ -13,162 +15,45 @@ import com.global.api.terminals.ingenico.variables.ParseFormat;
 import com.global.api.terminals.ingenico.variables.PaymentMode;
 
 public class IngenicoTerminalResponse extends IngenicoBaseResponse implements ITerminalResponse, IDeviceResponse {
+    private String responseText;
+    private String responseCode;
+    private String transactionId;
+    private String token;
+    private String signatureStatus;
+    private byte[] signatureData;
+    private String transactionType;
+    private String maskedCardNumber;
+    private String entryMethod;
+    private String approvalCode;
+    private BigDecimal amountDue;
+    private String cardHolderName;
+    private String cardBIN;
+    private boolean cardPresent;
+    private String expirationDate;
+    private String avsResponseCode;
+    private String avsResponseText;
+    private String cvvResponseCode;
+    private String cvvResponseText;
+    private boolean taxExempt;
+    private String taxExemptId;
+    private String ticketNumber;
+    private ApplicationCryptogramType applicationCryptogramType;
+    private String applicationCryptogram;
+    private String cardHolderVerificationMethod;
+    private String terminalVerificationResults;
+    private String applicationPreferredName;
+    private String applicationLabel;
+    private String applicationId;
 
-    private TransactionStatus transactionStatus;
-    private BigDecimal _amount;
-    private PaymentMode _paymentMode;
-    private String _privateData;
-    private String _currencyCode;
-    private DataResponse _respField;
-
-    private byte[] buffer;
-    private ParseFormat parseFormat;
-
-    public IngenicoTerminalResponse(byte[] buffer) {
-        this.buffer = buffer;
-        this.parseFormat = ParseFormat.Transaction;
-        parseResponse(buffer);
-    }
-
-    public IngenicoTerminalResponse(byte[] buffer, ParseFormat parseFormat) {
-        this.buffer = buffer;
-        this.parseFormat = parseFormat;
-        parseResponse(buffer);
-    }
-
-    public String dccCurrency;
-    public DynamicCurrencyStatus dccStatus;
-    public TransactionSubTypes transactionSubType;
-    public BigDecimal splitSaleAmount;
-    public String dynamicCurrencyCode;
-    public String currencyCode;
-    public String privateData;
-    public BigDecimal finalTransactionAmount;
-
-    public String getDccCurrency() {
-        return _respField.getDccCode();
-    }
-
-    public void setDccCurrency(String dccCurrency) {
-        this.dccCurrency = dccCurrency;
-    }
-
-    public DynamicCurrencyStatus getDccStatus() {
-        return _respField.getDccStatus();
-    }
-
-    public void setDccStatus(DynamicCurrencyStatus dccStatus) {
-        this.dccStatus = dccStatus;
-    }
-
-    public TransactionSubTypes getTransactionSubType() {
-        return _respField.getTransactionSubType();
-    }
-
-    public void setSplitSaleAmount(TransactionSubTypes transactionSubType) {
-        this.transactionSubType = transactionSubType;
-    }
-
-    public BigDecimal getSplitSaleAmount() {
-        return new BigDecimal("0");
-    }
-
-    public void setSplitSaleAmount(BigDecimal splitSaleAmount) {
-        this.splitSaleAmount = splitSaleAmount;
-    }
-
-    public PaymentMode getPaymentMode() {
-        return _paymentMode;
-    }
-
-    public void setPaymentMode(PaymentMode paymentMode) {
-        _paymentMode = paymentMode;
-    }
-
-    public String getDynamicCurrencyCode() {
-        return _respField.getDccCode();
-    }
-
-    public void setDynamicCurrencyCode(String dynamicCurrencyCode) {
-        this.dynamicCurrencyCode = dynamicCurrencyCode;
-    }
-
-    public String getCurrencyCode() {
-        return _currencyCode;
-    }
-
-    public void setCurrencyCode(String currencyCode) {
-        _currencyCode = currencyCode;
-    }
-
-    public String getPrivateData() {
-        return _privateData;
-    }
-
-    public void setPrivateData(String privateData) {
-        _privateData = privateData;
-    }
-
-    public BigDecimal getFinalTransactionAmount() {
-        return _respField.getFinalAmount();
-    }
-
-    public void setFinalTransactionAmount(BigDecimal finalTransactionAmount) {
-        this.finalTransactionAmount = finalTransactionAmount;
-    }
-
-    // properties
-    public String ResponseText;
-    public BigDecimal TransactionAmount;
-    public BigDecimal BalanceAmount;
-    public String AuthorizationCode;
-    public BigDecimal TipAmount;
-    public BigDecimal CashBackAmount;
-    public String PaymentType;
-    public String TerminalRefNumber;
-    public String ResponseCode;
-    public String TransactionId;
-    public String Token;
-    public String SignatureStatus;
-    public byte[] SignatureData;
-    public String TransactionType;
-    public String MaskedCardNumber;
-    public String EntryMethod;
-    public String ApprovalCode;
-    public BigDecimal AmountDue;
-    public String CardHolderName;
-    public String CardBIN;
-    public boolean CardPresent;
-    public String ExpirationDate;
-    public String AvsResponseCode;
-    public String AvsResponseText;
-    public String CvvResponseCode;
-    public String CvvResponseText;
-    public boolean TaxExempt;
-    public String TaxExemptId;
-    public String TicketNumber;
-//    public ApplicationCryptogramType ApplicationCryptogramType;
-    public String ApplicationCryptogram;
-    public String CardHolderVerificationMethod;
-    public String TerminalVerificationResults;
-    public String ApplicationPreferredName;
-    public String ApplicationLabel;
-    public String ApplicationId;
-
-    public String getResponseText() {
-        return ResponseText;
-    }
-
-    public void setResponseText(String responseText) {
-        ResponseText = responseText;
+    public IngenicoTerminalResponse(byte[] buffer, ParseFormat format) {
+        super(buffer, format);
     }
 
     public BigDecimal getTransactionAmount() {
-        return Extensions.toAmount(_amount.toString());
-    }
+        BigDecimal transactionAmount = new BigDecimal(getAmount())
+                .multiply(new BigDecimal("100"));
 
-    public void setTransactionAmount(BigDecimal transactionAmount) {
-        TransactionAmount = transactionAmount;
+        return transactionAmount;
     }
 
     public BigDecimal getBalanceAmount() {
@@ -176,7 +61,7 @@ public class IngenicoTerminalResponse extends IngenicoBaseResponse implements IT
     }
 
     public void setBalanceAmount(BigDecimal balanceAmount) {
-        BalanceAmount = balanceAmount;
+        _respField.setAvailableAmount(balanceAmount);
     }
 
     public String getAuthorizationCode() {
@@ -184,15 +69,7 @@ public class IngenicoTerminalResponse extends IngenicoBaseResponse implements IT
     }
 
     public void setAuthorizationCode(String authorizationCode) {
-        AuthorizationCode = authorizationCode;
-    }
-
-    public BigDecimal getTipAmount() {
-        return _respField.getGratuityAmount();
-    }
-
-    public void setTipAmount(BigDecimal tipAmount) {
-        TipAmount = tipAmount;
+        _respField.setAuthorizationCode(authorizationCode);
     }
 
     public BigDecimal getCashBackAmount() {
@@ -200,255 +77,425 @@ public class IngenicoTerminalResponse extends IngenicoBaseResponse implements IT
     }
 
     public void setCashBackAmount(BigDecimal cashBackAmount) {
-        CashBackAmount = cashBackAmount;
+        _respField.setCashbackAmount(cashBackAmount);
+    }
+
+    public BigDecimal getTipAmount() {
+        return _respField.getGratuityAmount();
+    }
+
+    public void setTipAmount(BigDecimal tipAmount) {
+        _respField.setGratuityAmount(tipAmount);
     }
 
     public String getPaymentType() {
-        return (_respField.getPaymentMethod() == null ? "" : _respField.getPaymentMethod().toString());
+        Integer paymentType = _respField.getPaymentMethod().getValue();
+        return PaymentMethod.getEnumName(paymentType).toString();
     }
 
     public void setPaymentType(String paymentType) {
-        PaymentType = paymentType;
+        PaymentMethod paymentMethod = PaymentMethod.getEnumName(Integer.parseInt(paymentType));
+        _respField.setPaymentMethod(paymentMethod);
     }
 
     public String getTerminalRefNumber() {
-        return TerminalRefNumber;
+        return getReferenceNumber();
     }
 
     public void setTerminalRefNumber(String terminalRefNumber) {
-        referenceNumber = terminalRefNumber;
+        setReferenceNumber(terminalRefNumber);
+    }
+
+    // -------
+
+    public void setTransactionAmount(BigDecimal transactionAmount) {
+        setAmount(transactionAmount.toString());
+    }
+
+    public String getResponseText() {
+        return responseText;
+    }
+
+    public void setResponseText(String responseText) {
+        this.responseText = responseText;
     }
 
     public String getResponseCode() {
-        return ResponseCode;
+        return responseCode;
     }
 
     public void setResponseCode(String responseCode) {
-        ResponseCode = responseCode;
+        this.responseCode = responseCode;
     }
 
     public String getTransactionId() {
-        return TransactionId;
+        return transactionId;
     }
 
     public void setTransactionId(String transactionId) {
-        TransactionId = transactionId;
+        this.transactionId = transactionId;
     }
 
     public String getToken() {
-        return Token;
+        return token;
     }
 
     public void setToken(String token) {
-        Token = token;
+        this.token = token;
     }
 
     public String getSignatureStatus() {
-        return SignatureStatus;
+        return signatureStatus;
     }
 
     public void setSignatureStatus(String signatureStatus) {
-        SignatureStatus = signatureStatus;
+        this.signatureStatus = signatureStatus;
     }
 
     public byte[] getSignatureData() {
-        return SignatureData;
+        return signatureData;
     }
 
     public void setSignatureData(byte[] signatureData) {
-        SignatureData = signatureData;
+        this.signatureData = signatureData;
     }
 
     public String getTransactionType() {
-        return TransactionType;
+        return transactionType;
     }
 
     public void setTransactionType(String transactionType) {
-        TransactionType = transactionType;
+        this.transactionType = transactionType;
     }
 
     public String getMaskedCardNumber() {
-        return MaskedCardNumber;
+        return maskedCardNumber;
     }
 
     public void setMaskedCardNumber(String maskedCardNumber) {
-        MaskedCardNumber = maskedCardNumber;
+        this.maskedCardNumber = maskedCardNumber;
     }
 
     public String getEntryMethod() {
-        return EntryMethod;
+        return entryMethod;
     }
 
     public void setEntryMethod(String entryMethod) {
-        EntryMethod = entryMethod;
+        this.entryMethod = entryMethod;
     }
 
     public String getApprovalCode() {
-        return ApprovalCode;
+        return approvalCode;
     }
 
     public void setApprovalCode(String approvalCode) {
-        ApprovalCode = approvalCode;
+        this.approvalCode = approvalCode;
     }
 
     public BigDecimal getAmountDue() {
-        return AmountDue;
+        return amountDue;
     }
 
     public void setAmountDue(BigDecimal amountDue) {
-        AmountDue = amountDue;
+        this.amountDue = amountDue;
     }
 
     public String getCardHolderName() {
-        return CardHolderName;
+        return cardHolderName;
     }
 
     public void setCardHolderName(String cardHolderName) {
-        CardHolderName = cardHolderName;
+        this.cardHolderName = cardHolderName;
     }
 
     public String getCardBIN() {
-        return CardBIN;
+        return cardBIN;
     }
 
     public void setCardBIN(String cardBIN) {
-        CardBIN = cardBIN;
+        this.cardBIN = cardBIN;
     }
 
     public boolean getCardPresent() {
-        return CardPresent;
+        return cardPresent;
     }
 
     public void setCardPresent(boolean cardPresent) {
-        CardPresent = cardPresent;
+        this.cardPresent = cardPresent;
     }
 
     public String getExpirationDate() {
-        return ExpirationDate;
+        return expirationDate;
     }
 
     public void setExpirationDate(String expirationDate) {
-        ExpirationDate = expirationDate;
+        this.expirationDate = expirationDate;
     }
 
     public String getAvsResponseCode() {
-        return AvsResponseCode;
+        return avsResponseCode;
     }
 
     public void setAvsResponseCode(String avsResponseCode) {
-        AvsResponseCode = avsResponseCode;
+        this.avsResponseCode = avsResponseCode;
     }
 
     public String getAvsResponseText() {
-        return AvsResponseText;
+        return avsResponseText;
     }
 
     public void setAvsResponseText(String avsResponseText) {
-        AvsResponseText = avsResponseText;
+        this.avsResponseText = avsResponseText;
     }
 
     public String getCvvResponseCode() {
-        return CvvResponseCode;
+        return cvvResponseCode;
     }
 
     public void setCvvResponseCode(String cvvResponseCode) {
-        CvvResponseCode = cvvResponseCode;
+        this.cvvResponseCode = cvvResponseCode;
     }
 
     public String getCvvResponseText() {
-        return CvvResponseText;
+        return cvvResponseText;
     }
 
     public void setCvvResponseText(String cvvResponseText) {
-        CvvResponseText = cvvResponseText;
+        this.cvvResponseText = cvvResponseText;
     }
 
     public boolean getTaxExempt() {
-        return TaxExempt;
+        return taxExempt;
     }
 
     public void setTaxExempt(boolean taxExempt) {
-        TaxExempt = taxExempt;
+        this.taxExempt = taxExempt;
     }
 
     public String getTaxExemptId() {
-        return TaxExemptId;
+        return taxExemptId;
     }
 
     public void setTaxExemptId(String taxExemptId) {
-        TaxExemptId = taxExemptId;
+        this.taxExemptId = taxExemptId;
     }
 
     public String getTicketNumber() {
-        return TicketNumber;
+        return ticketNumber;
     }
 
     public void setTicketNumber(String ticketNumber) {
-        TicketNumber = ticketNumber;
+        this.ticketNumber = ticketNumber;
+    }
+
+    public ApplicationCryptogramType getApplicationCryptogramType() {
+        return applicationCryptogramType;
+    }
+
+    public void setApplicationCryptogramType(ApplicationCryptogramType applicationCryptogramType) {
+        this.applicationCryptogramType = applicationCryptogramType;
     }
 
     public String getApplicationCryptogram() {
-        return ApplicationCryptogram;
+        return applicationCryptogram;
     }
 
     public void setApplicationCryptogram(String applicationCryptogram) {
-        ApplicationCryptogram = applicationCryptogram;
+        this.applicationCryptogram = applicationCryptogram;
     }
 
     public String getCardHolderVerificationMethod() {
-        return CardHolderVerificationMethod;
+        return cardHolderVerificationMethod;
     }
 
     public void setCardHolderVerificationMethod(String cardHolderVerificationMethod) {
-        CardHolderVerificationMethod = cardHolderVerificationMethod;
+        this.cardHolderVerificationMethod = cardHolderVerificationMethod;
     }
 
     public String getTerminalVerificationResults() {
-        return TerminalVerificationResults;
+        return terminalVerificationResults;
     }
 
     public void setTerminalVerificationResults(String terminalVerificationResults) {
-        TerminalVerificationResults = terminalVerificationResults;
+        this.terminalVerificationResults = terminalVerificationResults;
     }
 
     public String getApplicationPreferredName() {
-        return ApplicationPreferredName;
+        return applicationPreferredName;
     }
 
     public void setApplicationPreferredName(String applicationPreferredName) {
-        ApplicationPreferredName = applicationPreferredName;
+        this.applicationPreferredName = applicationPreferredName;
     }
 
     public String getApplicationLabel() {
-        return ApplicationLabel;
+        return applicationLabel;
     }
 
     public void setApplicationLabel(String applicationLabel) {
-        ApplicationLabel = applicationLabel;
+        this.applicationLabel = applicationLabel;
     }
 
     public String getApplicationId() {
-        return ApplicationId;
+        return applicationId;
     }
 
     public void setApplicationId(String applicationId) {
-        ApplicationId = applicationId;
+        this.applicationId = applicationId;
     }
 
-    public void parseResponse(byte[] response) {
-        if (response.length > 0) {
-            rawData = new String(response, StandardCharsets.UTF_8);
-            referenceNumber = rawData.substring(0, 2);
-            transactionStatus = TransactionStatus.getEnumName(Integer.parseInt(rawData.substring(2, 3)));
-            _amount = new BigDecimal(rawData.substring(3, 11));
-            _paymentMode = PaymentMode.getEnumName(Integer.parseInt(rawData.substring(11, 12)));
-            _currencyCode = rawData.substring(67, 70);
-            _privateData = rawData.substring(70, rawData.length());
-            status = transactionStatus.toString();
+//	private String transactionStatus;
+//	private BigDecimal _amount;
+//	private PaymentMode _paymentMode;
+//	private String _privateData;
+//	private String _currencyCode;
+//	private DataResponse _respField;
+//	private ParseFormat parseFormat;
+//
+//	public IngenicoTerminalResponse(byte[] buffer, ParseFormat parseFormat) {
+//		if (buffer != null) {
+//			this.parseFormat = parseFormat;
+//
+//			if (parseFormat != ParseFormat.PayAtTable) {
+//				parseResponse(buffer);
+//			}
+//		}
+//	}
+//
+//	public String dccCurrency;
+//	public DynamicCurrencyStatus dccStatus;
+//	public TransactionSubTypes transactionSubType;
+//	public BigDecimal splitSaleAmount;
+//	public String dynamicCurrencyCode;
+//	public String currencyCode;
+//	public String privateData;
+//	public BigDecimal finalTransactionAmount;
+//
+//	public String getDccCurrency() {
+//		return _respField.getDccCode();
+//	}
+//
+//	public void setDccCurrency(String dccCurrency) {
+//		this.dccCurrency = dccCurrency;
+//	}
+//
+//	public DynamicCurrencyStatus getDccStatus() {
+//		return _respField.getDccStatus();
+//	}
+//
+//	public void setDccStatus(DynamicCurrencyStatus dccStatus) {
+//		this.dccStatus = dccStatus;
+//	}
+//
+//	public TransactionSubTypes getTransactionSubType() {
+//		return _respField.getTransactionSubType();
+//	}
+//
+//	public void setSplitSaleAmount(TransactionSubTypes transactionSubType) {
+//		this.transactionSubType = transactionSubType;
+//	}
+//
+//	public BigDecimal getSplitSaleAmount() {
+//		return new BigDecimal("0");
+//	}
+//
+//	public void setSplitSaleAmount(BigDecimal splitSaleAmount) {
+//		this.splitSaleAmount = splitSaleAmount;
+//	}
+//
+//	public PaymentMode getPaymentMode() {
+//		return _paymentMode;
+//	}
+//
+//	public void setPaymentMode(PaymentMode paymentMode) {
+//		_paymentMode = paymentMode;
+//	}
+//
+//	public String getDynamicCurrencyCode() {
+//		return _respField.getDccCode();
+//	}
+//
+//	public void setDynamicCurrencyCode(String dynamicCurrencyCode) {
+//		this.dynamicCurrencyCode = dynamicCurrencyCode;
+//	}
+//
+//	public String getCurrencyCode() {
+//		return _currencyCode;
+//	}
+//
+//	public void setCurrencyCode(String currencyCode) {
+//		_currencyCode = currencyCode;
+//	}
+//
+//	public String getPrivateData() {
+//		return _privateData;
+//	}
+//
+//	public void setPrivateData(String privateData) {
+//		_privateData = privateData;
+//	}
+//
+//	public BigDecimal getFinalTransactionAmount() {
+//		return _respField.getFinalAmount();
+//	}
+//
+//	public void setFinalTransactionAmount(BigDecimal finalTransactionAmount) {
+//		this.finalTransactionAmount = finalTransactionAmount;
+//	}
+//
+//	public String responseText;
+//	public BigDecimal transactionAmount;
+//	public BigDecimal balanceAmount;
+//	public String authorizationCode;
+//	public BigDecimal tipAmount;
+//	public BigDecimal cashBackAmount;
+//	public String paymentType;
+//	public String terminalRefNumber;
+//	public String responseCode;
+//	public String transactionId;
+//	public String token;
+//	public String signatureStatus;
+//	public byte[] signatureData;
+//	public String transactionType;
+//	public String maskedCardNumber;
+//	public String entryMethod;
+//	public String approvalCode;
+//	public BigDecimal amountDue;
+//	public String cardHolderName;
+//	public String cardBIN;
+//	public boolean cardPresent;
+//	public String expirationDate;
+//	public String avsResponseCode;
+//	public String avsResponseText;
+//	public String cvvResponseCode;
+//	public String cvvResponseText;
+//	public boolean taxExempt;
+//	public String taxExemptId;
+//	public String ticketNumber;
+//	public ApplicationCryptogramType applicationCryptogramType;
+//	public String applicationCryptogram;
+//	public String cardHolderVerificationMethod;
+//	public String terminalVerificationResults;
+//	public String applicationPreferredName;
+//	public String applicationLabel;
+//	public String applicationId;
+//
 
-            if (!parseFormat.equals(ParseFormat.State) && !parseFormat.equals(ParseFormat.PID)) {
-                _respField = new DataResponse(rawData.substring(12, 67).getBytes());
-            }
-        }
-    }
+//
+//	public void parseResponse(byte[] response) {
+//		if (response.length > 0) {
+//			rawData = new String(response, StandardCharsets.UTF_8);
+//			referenceNumber = rawData.substring(0, 2);
+//			transactionStatus = TransactionStatus.getEnumName(Integer.parseInt(rawData.substring(2, 3))).toString();
+//			status = transactionStatus;
+//			_amount = new BigDecimal(rawData.substring(3, 11));
+//			_paymentMode = PaymentMode.getEnumName(Integer.parseInt(rawData.substring(11, 12)));
+//			_currencyCode = rawData.substring(67, 70);
+//			_privateData = rawData.substring(70, rawData.length());
+//
+//			if (!parseFormat.equals(ParseFormat.State) && !parseFormat.equals(ParseFormat.PID)) {
+//				_respField = new DataResponse(rawData.substring(12, 67).getBytes());
+//			}
+//		}
+//	}
 }

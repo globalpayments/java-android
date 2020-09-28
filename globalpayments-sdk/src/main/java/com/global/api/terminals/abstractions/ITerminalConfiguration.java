@@ -28,6 +28,6 @@ public interface ITerminalConfiguration {
     void setDeviceType(DeviceType type);
     IRequestIdProvider getRequestIdProvider();
     void setRequestIdProvider(IRequestIdProvider requestIdProvider);
-    DeviceMode getDeviceMode();
-    void setDeviceMode(DeviceMode deviceMode);
+//    DeviceMode getDeviceMode();
+//    void setDeviceMode(DeviceMode deviceMode);
 }

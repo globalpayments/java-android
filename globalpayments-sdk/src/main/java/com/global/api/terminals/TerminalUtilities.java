@@ -17,6 +17,7 @@ import com.global.api.terminals.abstractions.IRequestSubGroup;
 import com.global.api.utils.MessageWriter;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class TerminalUtilities {
     private static final String version = "1.35";
@@ -69,6 +70,17 @@ public class TerminalUtilities {
         switch (settings) {
             case SERIAL:
                 throw new BuilderException("Failed to build request message. Not available for this library.");
+            case PAY_AT_TABLE:
+                buffer.add(ControlCodes.STX.getByte());
+                for (char c : message.toCharArray())
+                    buffer.add((byte) c);
+                buffer.add(ControlCodes.ETX.getByte());
+                byte[] byteMessageArray = message.getBytes(StandardCharsets.UTF_8);
+                String result = String.valueOf(calculateLRC(byteMessageArray));
+                byte[] arrResult = result.getBytes();
+                lrc = arrResult;
+                buffer.add(lrc[0]);
+                break;
             case TCP_IP_SERVER:
                 String msg = calculateHeader(message.getBytes(StandardCharsets.UTF_8)) + message;
                 for (char c : msg.toCharArray())

@@ -43,7 +43,7 @@ public enum TransactionType implements IFlag {
     PayAtTable;
 
     public long getLongValue() {
-        return 1 << this.ordinal();
+        return 1L << this.ordinal();
     }
 
     public static Set<TransactionType> getSet(long value) {
