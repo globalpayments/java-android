@@ -91,6 +91,10 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
     public void disconnect() {
         try {
             if (_serverSocket != null || !_serverSocket.isClosed()) {
+                if (!_isKeepAlive) {
+                    _socket.setSoTimeout(1000);
+                }
+
                 _readData = false;
                 _in.close();
                 _out.close();
@@ -117,6 +121,7 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
             }
 
             // Send request from builder.
+            _socket.setSoTimeout(_settings.getTimeout());
             _out.write(buffer, 0, buffer.length);
             _out.flush();
 
