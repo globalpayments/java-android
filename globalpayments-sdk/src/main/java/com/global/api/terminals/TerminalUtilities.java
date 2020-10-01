@@ -3,9 +3,6 @@ package com.global.api.terminals;
 //import android.graphics.Color;
 
 import android.graphics.Point;
-import android.os.Build;
-
-import androidx.annotation.RequiresApi;
 
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.ControlCodes;
@@ -65,7 +62,7 @@ public class TerminalUtilities {
 
     public static DeviceMessage buildIngenicoRequest(String message, ConnectionModes settings) throws BuilderException {
         MessageWriter buffer = new MessageWriter();
-        byte[] lrc;
+        byte lrc;
 
         switch (settings) {
             case SERIAL:
@@ -75,11 +72,10 @@ public class TerminalUtilities {
                 for (char c : message.toCharArray())
                     buffer.add((byte) c);
                 buffer.add(ControlCodes.ETX.getByte());
-                byte[] byteMessageArray = message.getBytes(StandardCharsets.UTF_8);
-                String result = String.valueOf(calculateLRC(byteMessageArray));
-                byte[] arrResult = result.getBytes();
-                lrc = arrResult;
-                buffer.add(lrc[0]);
+                byte[] arrByte = calculateLRC(message);
+                lrc = arrByte[0];
+                buffer.add(lrc);
+
                 break;
             case TCP_IP_SERVER:
                 String msg = calculateHeader(message.getBytes(StandardCharsets.UTF_8)) + message;
@@ -119,65 +115,69 @@ public class TerminalUtilities {
 //        return new DeviceMessage(buffer.toArray());
 //    }
 
-    public static DeviceMessage buildRequest(String message, MessageFormat format) {
-        MessageWriter buffer = new MessageWriter();
-
-        // beginning sentinel
-        if (format.equals(MessageFormat.Visa2nd))
-            buffer.add(ControlCodes.STX);
-        else {
-            buffer.add((byte) (message.length() >>> 8));
-            buffer.add((byte) message.length());
-        }
-
-        // put message
-        buffer.addRange(message.getBytes());
-
-        // ending sentinel
-        if (format.equals(MessageFormat.Visa2nd)) {
-            buffer.add(ControlCodes.ETX);
-
-            byte lrc = calculateLRC(buffer.toArray());
-            buffer.add(lrc);
-        }
-
-        return new DeviceMessage(buffer.toArray());
-    }
+//    public static DeviceMessage buildRequest(String message, MessageFormat format) {
+//        MessageWriter buffer = new MessageWriter();
+//
+//        // beginning sentinel
+//        if (format.equals(MessageFormat.Visa2nd))
+//            buffer.add(ControlCodes.STX);
+//        else {
+//            buffer.add((byte) (message.length() >>> 8));
+//            buffer.add((byte) message.length());
+//        }
+//
+//        // put message
+//        buffer.addRange(message.getBytes());
+//
+//        // ending sentinel
+//        if (format.equals(MessageFormat.Visa2nd)) {
+//            buffer.add(ControlCodes.ETX);
+//
+//            byte lrc = calculateLRC(Arrays.toString(buffer.toArray()));
+//            buffer.add(lrc);
+//        }
+//
+//        return new DeviceMessage(buffer.toArray());
+//    }
 
 //    public static DeviceMessage buildRequest(PaxMsgId messageId, Object... elements) {
 //        String message = getElementString(elements);
 //        return buildMessage(messageId, message);
 //    }
 
-    public static DeviceMessage buildRequest(byte[] message) {
-        MessageWriter buffer = new MessageWriter();
+//    public static DeviceMessage buildRequest(byte[] message) {
+//        MessageWriter buffer = new MessageWriter();
+//
+//        // beginning sentinel
+//        buffer.add(ControlCodes.STX);
+//
+//        // put message
+//        buffer.addRange(message);
+//
+//        // ending sentinel
+//        buffer.add(ControlCodes.ETX);
+//
+//        byte lrc = calculateLRC(buffer.toArray());
+//        buffer.add(lrc);
+//
+//        return new DeviceMessage(buffer.toArray());
+//    }
 
-        // beginning sentinel
-        buffer.add(ControlCodes.STX);
+    public static byte[] calculateLRC(String requestMessage) {
+        byte[] cCOde = new byte[] { ControlCodes.ETX.getByte() };
+        int index1 = requestMessage.getBytes().length;
+        int index2 = cCOde.length;
+        byte[] bytes = new byte[index1 + index2];
+        System.arraycopy(requestMessage.getBytes(), 0, bytes, 0 ,index1);
+        System.arraycopy(cCOde, 0, bytes, index1, index2);
 
-        // put message
-        buffer.addRange(message);
-
-        // ending sentinel
-        buffer.add(ControlCodes.ETX);
-
-        byte lrc = calculateLRC(buffer.toArray());
-        buffer.add(lrc);
-
-        return new DeviceMessage(buffer.toArray());
-    }
-
-    public static byte calculateLRC(byte[] buffer) {
-        int length = buffer.length;
-        if (buffer[buffer.length - 1] != ControlCodes.ETX.getByte()) {
-            length--;
+        byte lrc = 0;
+        for (int i = 0; i < bytes.length; i++) {
+            lrc ^= bytes[i];
         }
+        bytes = new byte[] {lrc};
+        return bytes;
 
-        byte lrc = (byte) 0x00;
-        for (int i = 1; i < length; i++) {
-            lrc = (byte) (lrc ^ buffer[i]);
-        }
-        return lrc;
     }
 
 //    public static byte[] buildSignatureImage(String pathData) {

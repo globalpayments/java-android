@@ -2,6 +2,7 @@ package com.global.api.terminals.ingenico;
 
 import android.content.res.AssetManager;
 import android.os.Build;
+import android.os.FileUtils;
 import android.provider.MediaStore;
 import android.util.Log;
 
@@ -14,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -109,11 +111,7 @@ public class IngenicoController extends DeviceController {
     public ITerminalResponse processTransaction(TerminalAuthBuilder builder) throws ApiException {
         IDeviceMessage request = null;
         if (settings.getConnectionMode() == ConnectionModes.PAY_AT_TABLE) {
-            if (builder.getXMLPath() != null) {
-                request = new DeviceMessage(getXMLContent(builder.getXMLPath()));
-            } else {
-                request = buildPATTResponseMessage(builder);
-            }
+            request = buildPATTResponseMessage(builder);
         } else {
             request = buildRequestMessage(builder);
         }
@@ -121,22 +119,32 @@ public class IngenicoController extends DeviceController {
     }
 
     private byte[] getXMLContent(String xmlPath) throws BuilderException {
-        byte[] result;
+        byte[] result = new byte[0];
+        int size = (int) xmlPath.length();
+        byte bytes[] = new byte[size];
+        byte tmpBuff[] = new byte[size];
 
         try {
             if (xmlPath.isEmpty()) {
                 throw new BuilderException("XML Path is Empty");
             }
-
             byte[] xmlByteArr = new byte[0];
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 xmlByteArr = Files.readAllBytes(Paths.get(xmlPath));
+            } else {
+                RandomAccessFile f = new RandomAccessFile(xmlPath, "r");
+                byte[] b = new byte[(int)f.length()];
+                f.readFully(b);
+                xmlByteArr = b;
             }
 
             String xmlContent = TerminalUtilities.calculateHeader(xmlByteArr)
                     + new String(xmlByteArr, StandardCharsets.UTF_8);
             result = xmlContent.getBytes(StandardCharsets.UTF_8);
+            Log.i("IngenicoController", "FILE CONTENT:" + result);
+            Log.i("IngenicoController", "FILE CONTENT:2" + xmlByteArr);
+
 
         } catch (Exception e) {
             throw new BuilderException(e.getMessage());
@@ -257,6 +265,7 @@ public class IngenicoController extends DeviceController {
     private IDeviceMessage buildPATTResponseMessage(TerminalAuthBuilder builder) throws BuilderException {
         StringBuilder message = new StringBuilder();
 
+
         // PAT Functionalities
         if (builder.getXMLPath() != null) {
             byte[] content = getXMLContent(builder.getXMLPath());
@@ -264,19 +273,19 @@ public class IngenicoController extends DeviceController {
                     .substring(3);
             message.append(xml);
         } else {
-            Integer referenceNumber = builder.getReferenceNumber();
-            Integer transactionStatus = builder.getTransactionStatus().getTransactionStatus();
-            BigDecimal amount = builder.getAmount();
+            String referenceNumber = new INGENICO_RESP().PAT_EPOS_NUMBER;
+            Integer transactionStatus = TransactionStatus.SUCCESS.getValue();
+            BigDecimal amount = validateAmount(builder.getAmount());
             Integer paymentMode = builder.getPATTPaymentMode().getValue();
             String currencyCode = builder.getCurrencyCode();
             String privateData = PATResponseType.getEnumName(builder.getPATTResponseType().getValue()).toString();
-            amount = validateAmount(amount);
 
             if (privateData.length() < 10) {
                 for (int i = privateData.length(); i < 10; i++) {
                     privateData += (char) ControlCodes.SP.getByte();
                 }
             }
+            currencyCode = (!isObjectNullOrEmpty(builder.getCurrencyCode()) ? builder.getCurrencyCode() : currencyCode);
 
             DecimalFormat decimalFormat = new DecimalFormat("00000000");
             message.append(referenceNumber);

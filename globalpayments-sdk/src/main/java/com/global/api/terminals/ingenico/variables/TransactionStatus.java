@@ -25,7 +25,7 @@ public enum TransactionStatus {
         return (TransactionStatus) map.get(val);
     }
 
-    public int getTransactionStatus() {
+    public int getValue() {
         return this.status;
     }
 }

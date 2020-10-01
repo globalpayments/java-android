@@ -37,8 +37,6 @@ import static java.nio.charset.StandardCharsets.*;
 public class IngenicoTcpInterface implements IDeviceCommInterface {
     private ServerSocket _serverSocket;
     private Socket _socket;
-    private DataOutputStream _output;
-    private InputStream _input;
     private ITerminalConfiguration _settings;
     private byte[] _terminalResponse;
     private Thread dataReceiving;
@@ -77,7 +75,12 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
             acceptClient();
 
             // Start thread for Receiving data.
-            new Thread(new AnalyzeReceivedDataTask()).start();
+            new Thread(new Runnable() {
+                public void run() {
+                    receviedData();
+                }
+            }).start();
+//            new Thread(new AnalyzeReceivedDataTask()).start();
 
         } catch (ConfigurationException | IOException e) {
             throw new ConfigurationException(e.getMessage());
@@ -89,8 +92,8 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
         try {
             if (_serverSocket != null || !_serverSocket.isClosed()) {
                 _readData = false;
-                _input.close();
-                _output.close();
+                _in.close();
+                _out.close();
                 _socket.close();
                 _serverSocket.close();
             }
@@ -114,8 +117,8 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
             }
 
             // Send request from builder.
-            _output.write(buffer, 0, buffer.length);
-            _output.flush();
+            _out.write(buffer, 0, buffer.length);
+            _out.flush();
 
             onMessageSent.messageSent(TerminalUtilities.getString(buffer).substring(2));
 
@@ -195,97 +198,185 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
                 // Set timeout of data read
 
                 // Get input and output stream from client.
-                _output = new DataOutputStream(new BufferedOutputStream(
-                        _socket.getOutputStream()
-                ));
-                _input = new DataInputStream(new BufferedInputStream(
-                        _socket.getInputStream()
-                ));
+                _out = new DataOutputStream(_socket.getOutputStream());
+                _in = new DataInputStream(_socket.getInputStream());
             }
         } catch (IOException e) {
             throw e;
         }
     }
 
-    class AnalyzeReceivedDataTask implements Runnable {
-        @Override
-        public void run() {
-            try {
-                byte[] headerBuffer = new byte[2];
-                while (_readData) {
-                    if (_settings.getConnectionMode() == ConnectionModes.PAY_AT_TABLE) {
-                        byte[] buffer = new byte[8192];
-                        _in.read(buffer, 0, buffer.length);
+//    class AnalyzeReceivedDataTask implements Runnable {
+//        @Override
+//        public void run() {
+//            try {
+//                byte[] headerBuffer = new byte[2];
+//                while (_readData) {
+//                    if (_settings.getConnectionMode() == ConnectionModes.PAY_AT_TABLE) {
+//                        byte[] buffer = new byte[8192];
+//                        _in.read(buffer, 0, buffer.length);
+//
+//                        MessageWriter byteArr = new MessageWriter();
+//                        for (int i = 0; i < buffer.length; i++) {
+//                            byteArr.add(buffer[i]);
+//
+//                            if (buffer[i] == ControlCodes.ETX.getByte()) {
+//                                byteArr.add(buffer[i + 1]);
+//                                break;
+//                            }
+//                        }
+//                        Log.i("TCPINTERFACE", "Dumaan dito b4 arrlen");
+//                        Integer arrLen = byteArr.toArray().length;
+//                        if (arrLen > 0) {
+//                            Log.i("TCPINTERFACE", "Dumaan dito after arrlen");
+//
+//                            String raw = TerminalUtilities.getString(byteArr.toArray());
+//                            String dataETX = raw.substring(1, raw.length() - 2);
+//                            String receivedLRC = raw.substring(raw.length() - 1);
+//
+//                            byte[] byteMessageArray = dataETX.getBytes(StandardCharsets.UTF_8);
+//                            String result = String.valueOf(calculateLRC(byteMessageArray));
+//                            byte[] ArrMessage = result.getBytes();
+//                            String calculatedLRC = new String(ArrMessage, StandardCharsets.UTF_8);
+//
+//                            Log.i("TCPINTERFACE", "CalculatedLRCbefore" + calculatedLRC + "ReceivedLRC" + receivedLRC);
+//
+//                            if (calculatedLRC.contentEquals(receivedLRC)) {
+//                                String data = dataETX;
+//
+//                                Log.i("TCPINTERFACE", "CalculatedLRCafter" + calculatedLRC + "ReceivedLRC" + receivedLRC);
+//
+//                                PATRequest patRequest = new PATRequest(data.getBytes());
+//                                if (_onPayAtTableRequest != null) {
+//                                    _onPayAtTableRequest.onPayAtTableRequest(patRequest);
+//                                }
+//                            }
+//                        }
+//                    } else {
+//                        _in.read(headerBuffer, 0, headerBuffer.length);
+//                        int dataLength = TerminalUtilities.headerLength(headerBuffer);
+//                        byte[] dataBuffer = new byte[dataLength + 2];
+//
+//                        Thread.sleep(1000);
+//                        _in.read(dataBuffer, 0, dataBuffer.length);
+//
+//                        if (!_readData) {
+//                            break;
+//                        }
+//
+//                        if (_receivingException != null) {
+//                            dataBuffer = null;
+//                        }
+//
+//                        if (isBroadcast(dataBuffer)) {
+//                            BroadcastMessage broadcastMessage = new BroadcastMessage(dataBuffer);
+//                            if (onBroadcastMessage != null) {
+//                                onBroadcastMessage.broadcastReceived(broadcastMessage.getCode(),
+//                                        broadcastMessage.getMessage());
+//                            }
+//                        } else if (isKeepAlive(dataBuffer) && new INGENICO_GLOBALS().KEEPALIVE) {
+//                            _isKeepAlive = true;
+//                            byte[] kResponse = keepAliveResponse(dataBuffer);
+//                            _out.write(kResponse);
+//                            _out.flush();
+//                        } else {
+//                            _terminalResponse = dataBuffer;
+//                        }
+//                    }
+//                }
+//            } catch (Exception e) {
+//                if (_isResponseNeeded || _isKeepAlive) {
+//                    _receivingException = new ApiException("Socket Error: " + e.getMessage());
+//                }
+//            }
+//        }
+//    }
 
-                        MessageWriter byteArr = new MessageWriter();
-                        for (int i = 0; i < buffer.length; i++) {
-                            byteArr.add(buffer[i]);
+    private void receviedData() {
+        try {
+            byte[] headerBuffer = new byte[2];
+            while (_readData) {
+                if (_settings.getConnectionMode() == ConnectionModes.PAY_AT_TABLE) {
+                    byte[] buffer = new byte[8192];
+                    _in.read(buffer, 0, buffer.length);
 
-                            if (buffer[i] == ControlCodes.ETX.getByte()) {
-                                byteArr.add(buffer[i + 1]);
-                                break;
-                            }
-                        }
+                    MessageWriter byteArr = new MessageWriter();
+                    for (int i = 0; i < buffer.length; i++) {
+                        byteArr.add(buffer[i]);
 
-                        Integer arrLen = byteArr.toArray().length;
-                        if (arrLen > 0) {
-                            String raw = TerminalUtilities.getString(byteArr.toArray());
-                            String dataETX = raw.substring(1, raw.length() - 2);
-                            String receivedLRC = raw.substring(raw.length() - 1);
-
-                            byte[] byteMessageArray = dataETX.getBytes(StandardCharsets.UTF_8);
-                            String result = String.valueOf(calculateLRC(byteMessageArray));
-                            byte[] ArrMessage = result.getBytes();
-                            String calculatedLRC = new String(ArrMessage, StandardCharsets.UTF_8);
-
-                            if (calculatedLRC.contentEquals(receivedLRC)) {
-                                String data = dataETX;
-
-                                PATRequest patRequest = new PATRequest(data.getBytes());
-                                if (_onPayAtTableRequest != null) {
-                                    _onPayAtTableRequest.onPayAtTableRequest(patRequest);
-                                }
-                            }
-                        }
-                    } else {
-                        _in.read(headerBuffer, 0, headerBuffer.length);
-                        int dataLength = TerminalUtilities.headerLength(headerBuffer);
-                        byte[] dataBuffer = new byte[dataLength + 2];
-
-                        Thread.sleep(1000);
-                        _in.read(dataBuffer, 0, dataBuffer.length);
-
-                        if (!_readData) {
+                        if (buffer[i] == ControlCodes.ETX.getByte()) {
+                            byteArr.add(buffer[i + 1]);
                             break;
                         }
+                    }
+                    Integer arrLen = byteArr.toArray().length;
+                    if (arrLen > 0) {
 
-                        if (_receivingException != null) {
-                            dataBuffer = null;
-                        }
+                        String raw = TerminalUtilities.getString(byteArr.toArray());
+                        String dataETX = raw.substring(1, raw.length() - 2);
+                        String receivedLRC = raw.substring(raw.length() - 1);
 
-                        if (isBroadcast(dataBuffer)) {
-                            BroadcastMessage broadcastMessage = new BroadcastMessage(dataBuffer);
-                            if (onBroadcastMessage != null) {
-                                onBroadcastMessage.broadcastReceived(broadcastMessage.getCode(),
-                                        broadcastMessage.getMessage());
+//                        byte[] calculateLRC = TerminalUtilities.calculateLRC(dataETX);
+//                        String calculatedLRC = new String(calculateLRC, StandardCharsets.UTF_8);
+
+                        byte[] calculateLRC = TerminalUtilities.calculateLRC(dataETX);
+                        String calculatedLRC = new String(calculateLRC, UTF_8);
+
+//                        byte[] byteMessageArray = dataETX.getBytes(StandardCharsets.UTF_8);
+//                        String result = String.valueOf(calculateLRC(byteMessageArray));
+//                        byte[] ArrMessage = result.getBytes();
+//                        String calculatedLRC = new String(ArrMessage, StandardCharsets.UTF_8);
+
+                        Log.i("TCPINTERFACE", "CalculatedLRCbefore" + calculatedLRC + "ReceivedLRC" + receivedLRC);
+
+                        if (calculatedLRC.contentEquals(receivedLRC)) {
+                            String data = dataETX;
+
+                            Log.i("TCPINTERFACE", "CalculatedLRCafter" + calculatedLRC + "ReceivedLRC" + receivedLRC);
+
+                            PATRequest patRequest = new PATRequest(data.getBytes());
+                            if (_onPayAtTableRequest != null) {
+                                _onPayAtTableRequest.onPayAtTableRequest(patRequest);
                             }
-                        } else if (isKeepAlive(dataBuffer) && new INGENICO_GLOBALS().KEEPALIVE) {
-                            _isKeepAlive = true;
-                            byte[] kResponse = keepAliveResponse(dataBuffer);
-                            _out.write(kResponse);
-                            _out.flush();
-                        } else {
-                            _terminalResponse = dataBuffer;
                         }
                     }
-                }
-            } catch (Exception e) {
-                if (_isResponseNeeded || _isKeepAlive) {
-                    _receivingException = new ApiException("Socket Error: " + e.getMessage());
+                } else {
+                    _in.read(headerBuffer, 0, headerBuffer.length);
+                    int dataLength = TerminalUtilities.headerLength(headerBuffer);
+                    byte[] dataBuffer = new byte[dataLength + 2];
+
+                    Thread.sleep(1000);
+                    _in.read(dataBuffer, 0, dataBuffer.length);
+
+                    if (!_readData) {
+                        break;
+                    }
+
+                    if (_receivingException != null) {
+                        dataBuffer = null;
+                    }
+
+                    if (isBroadcast(dataBuffer)) {
+                        BroadcastMessage broadcastMessage = new BroadcastMessage(dataBuffer);
+                        if (onBroadcastMessage != null) {
+                            onBroadcastMessage.broadcastReceived(broadcastMessage.getCode(),
+                                    broadcastMessage.getMessage());
+                        }
+                    } else if (isKeepAlive(dataBuffer) && new INGENICO_GLOBALS().KEEPALIVE) {
+                        _isKeepAlive = true;
+                        byte[] kResponse = keepAliveResponse(dataBuffer);
+                        _out.write(kResponse);
+                        _out.flush();
+                    } else {
+                        _terminalResponse = dataBuffer;
+                    }
                 }
             }
+        } catch (Exception e) {
+            if (_isResponseNeeded || _isKeepAlive) {
+                _receivingException = new ApiException("Socket Error: " + e.getMessage());
+            }
         }
-
     }
 
     private boolean isBroadcast(byte[] buffer) {
