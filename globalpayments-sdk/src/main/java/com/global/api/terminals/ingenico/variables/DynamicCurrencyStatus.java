@@ -21,4 +21,8 @@ public enum DynamicCurrencyStatus {
     public static DynamicCurrencyStatus getEnumName(int val) {
         return (DynamicCurrencyStatus) map.get(val);
     }
+
+    public Integer getValue() {
+        return status;
+    }
 }

@@ -134,7 +134,6 @@ public class IngenicoController extends DeviceController {
                 xml.readFully(b);
                 xmlByteArr = b;
             }
-            Log.i("TEST", "TEST XML" + new String(xmlByteArr, StandardCharsets.UTF_8));
             xmlContent = new String(xmlByteArr, StandardCharsets.UTF_8);
             result = xmlContent.getBytes(StandardCharsets.UTF_8);
         } catch (Exception e) {

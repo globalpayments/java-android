@@ -1,18 +1,21 @@
 package com.global.api.terminals.ingenico.responses;
 
+import android.util.Log;
+
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
 import com.global.api.terminals.DeviceResponse;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.ingenico.variables.DynamicCurrencyStatus;
 import com.global.api.terminals.ingenico.variables.ParseFormat;
+import com.global.api.terminals.ingenico.variables.PaymentMethod;
 import com.global.api.terminals.ingenico.variables.PaymentMode;
 import com.global.api.terminals.ingenico.variables.TransactionStatus;
 import com.global.api.terminals.ingenico.variables.TransactionSubTypes;
 
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-
 public abstract class IngenicoBaseResponse extends DeviceResponse {
-
     protected byte[] _buffer;
     protected ParseFormat _format;
     protected DataResponse _respField;
@@ -20,8 +23,6 @@ public abstract class IngenicoBaseResponse extends DeviceResponse {
     private String _dccCurrency;
     private DynamicCurrencyStatus _dccStatus;
     private BigDecimal _dccAmount;
-    private TransactionSubTypes _transactionSubType;
-    private BigDecimal _splitSaleAmount;
     private PaymentMode _paymentMode;
     private String _currencyCode;
     private String _privateData;
@@ -32,11 +33,14 @@ public abstract class IngenicoBaseResponse extends DeviceResponse {
         if (buffer != null) {
             _buffer = buffer;
             _format = format;
+
             if (_format != ParseFormat.XML) {
                 parseResponse(_buffer);
             }
         }
     }
+
+//	public abstract void parseResponse() throws ApiException;
 
     public void parseResponse(byte[] response) {
         if (response != null) {
@@ -69,8 +73,9 @@ public abstract class IngenicoBaseResponse extends DeviceResponse {
         _dccCurrency = dccCurrency;
     }
 
-    public DynamicCurrencyStatus getDccStatus() {
-        return _dccStatus;
+    public String getDccStatus() {
+        DynamicCurrencyStatus dccStatus = DynamicCurrencyStatus.getEnumName(_dccStatus.getValue());
+        return dccStatus.toString();
     }
 
     public void setDccStatus(DynamicCurrencyStatus dccStatus) {
@@ -85,24 +90,24 @@ public abstract class IngenicoBaseResponse extends DeviceResponse {
         _dccAmount = dccAmount;
     }
 
-    public TransactionSubTypes getTransactionSubType() {
-        return _transactionSubType;
+    public String getTransactionSubType() {
+        return _respField.getTransactionSubType().toString();
     }
 
     public void setTransactionSubType(TransactionSubTypes transactionSubType) {
-        _transactionSubType = transactionSubType;
+        _respField.setTransactionSubType(transactionSubType);
     }
 
     public BigDecimal getSplitSaleAmount() {
-        return _splitSaleAmount;
+        return _respField.getSplitSaleAmount();
     }
 
     public void setSplitSaleAmount(BigDecimal splitSaleAmount) {
-        _splitSaleAmount = splitSaleAmount;
+        _respField.setSplitSaleAmount(splitSaleAmount);
     }
 
-    public PaymentMode getPaymentMode() {
-        return _paymentMode;
+    public String getPaymentMode() {
+        return _paymentMode.toString();
     }
 
     public void setPaymentMode(PaymentMode paymentMode) {
@@ -139,6 +144,21 @@ public abstract class IngenicoBaseResponse extends DeviceResponse {
 
     public void setAmount(String amount) {
         _amount = amount;
+    }
+
+    public String getPaymentMethod() {
+        PaymentMethod paymentMethod = null;
+
+        if (_respField.getPaymentMethod() != null) {
+            int iPaymentMethod = _respField.getPaymentMethod().getValue();
+            paymentMethod = PaymentMethod.getEnumName(iPaymentMethod);
+        }
+
+        return paymentMethod == null ? "" : paymentMethod.toString();
+    }
+
+    public void setPaymentMethod(PaymentMethod value) {
+        _respField.setPaymentMethod(value);
     }
 
     @Override

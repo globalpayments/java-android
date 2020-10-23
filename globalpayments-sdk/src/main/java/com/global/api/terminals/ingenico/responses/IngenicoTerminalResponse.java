@@ -1,15 +1,19 @@
 package com.global.api.terminals.ingenico.responses;
 
+import android.util.Log;
+
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import com.global.api.entities.enums.ApplicationCryptogramType;
-import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.terminals.abstractions.ITerminalResponse;
-import com.global.api.terminals.ingenico.variables.PaymentMethod;
+import com.global.api.terminals.ingenico.variables.DynamicCurrencyStatus;
 import com.global.api.terminals.ingenico.variables.ParseFormat;
+import com.global.api.terminals.ingenico.variables.PaymentMode;
+import com.global.api.terminals.ingenico.variables.TransactionSubTypes;
+import com.global.api.utils.Extensions;
 
-public class IngenicoTerminalResponse extends IngenicoBaseResponse implements ITerminalResponse, IDeviceResponse {
+public class IngenicoTerminalResponse extends IngenicoBaseResponse implements ITerminalResponse {
     private String responseText;
     private String responseCode;
     private String transactionId;
@@ -39,16 +43,20 @@ public class IngenicoTerminalResponse extends IngenicoBaseResponse implements IT
     private String applicationPreferredName;
     private String applicationLabel;
     private String applicationId;
+    private String paymentType;
 
     public IngenicoTerminalResponse(byte[] buffer, ParseFormat format) {
         super(buffer, format);
+        Log.i("SUPER BUFFER", String.valueOf(buffer.length));
+        Log.i("SUPER BUFFER", Arrays.toString(buffer));
     }
 
     public BigDecimal getTransactionAmount() {
-        BigDecimal transactionAmount = new BigDecimal(getAmount())
-                .multiply(new BigDecimal("100"));
+        return Extensions.toAmount(getAmount());
+    }
 
-        return transactionAmount;
+    public void setTransactionAmount(BigDecimal transactionAmount) {
+        setAmount(transactionAmount.toString());
     }
 
     public BigDecimal getBalanceAmount() {
@@ -83,16 +91,6 @@ public class IngenicoTerminalResponse extends IngenicoBaseResponse implements IT
         _respField.setGratuityAmount(tipAmount);
     }
 
-    public String getPaymentType() {
-        Integer paymentType =  _respField.getPaymentMethod() == null ? 0 : _respField.getPaymentMethod().getValue();
-        return paymentType == 0 ? "" : PaymentMethod.getEnumName(paymentType).toString();
-    }
-
-    public void setPaymentType(String paymentType) {
-        PaymentMethod paymentMethod = PaymentMethod.getEnumName(Integer.parseInt(paymentType));
-        _respField.setPaymentMethod(paymentMethod);
-    }
-
     public String getTerminalRefNumber() {
         return getReferenceNumber();
     }
@@ -101,10 +99,66 @@ public class IngenicoTerminalResponse extends IngenicoBaseResponse implements IT
         setReferenceNumber(terminalRefNumber);
     }
 
+    public String getPaymentMethod() {
+        return super.getPaymentMethod();
+    }
+
+    public String getTransactionSubType() {
+        return super.getTransactionSubType();
+    }
+
+    public void setTransactionSubType(TransactionSubTypes transactionSubType) {
+        super.setTransactionSubType(transactionSubType);
+    }
+
+    public BigDecimal getDynamicCurrencyCodeAmount() {
+        return super.getDccAmount();
+    }
+
+    public void setDyanmicCurrencyCodeAmount(BigDecimal dynamicCurrencyCodeAmount) {
+        super.setDccAmount(dynamicCurrencyCodeAmount);
+    }
+
+    public String getDynamicCurrencyCode() {
+        return super.getDccCurrency();
+    }
+
+    public void setDynamicCurrencyCode(String dynamicCurrencyCode) {
+        super.setDccCurrency(dynamicCurrencyCode);
+    }
+
+    public String getDynamicCurrencyCodeStatus() {
+        return super.getDccStatus();
+    }
+
+    public void setDynamicCurrencyCodeStatus(DynamicCurrencyStatus status) {
+        super.setDccStatus(status);
+    }
+
+    public BigDecimal getSplitSaleAmount() {
+        return super.getSplitSaleAmount();
+    }
+
+    public void setSplitSaleAmount(BigDecimal splitSaleAmount) {
+        super.setSplitSaleAmount(splitSaleAmount);
+    }
+
+    public String getPaymentMode() {
+        return super.getPaymentMode();
+    }
+
+    public void setPaymentMode(PaymentMode paymentMode) {
+        super.setPaymentMode(paymentMode);
+    }
+
     // -------
 
-    public void setTransactionAmount(BigDecimal transactionAmount) {
-        setAmount(transactionAmount.toString());
+    public String getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(String paymentType) {
+        this.paymentType = paymentType;
     }
 
     public String getResponseText() {

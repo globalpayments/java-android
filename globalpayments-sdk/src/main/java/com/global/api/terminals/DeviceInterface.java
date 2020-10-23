@@ -302,7 +302,6 @@ public abstract class DeviceInterface<T extends DeviceController> implements IDe
     }
 
     public TerminalAuthBuilder payAtTableResponse() throws ApiException {
-        Log.i("Device Interface", "Dumaan Dito PayAtTableResponse");
         return new TerminalAuthBuilder(TransactionType.PayAtTable, PaymentMethodType.Other);
     }
 

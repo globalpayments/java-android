@@ -1,7 +1,11 @@
 package com.global.api.terminals.abstractions;
 
 import java.math.BigDecimal;
-//import com.global.api.entities.enums.ApplicationCryptogramType;
+import com.global.api.entities.enums.ApplicationCryptogramType;
+import com.global.api.terminals.ingenico.variables.DynamicCurrencyStatus;
+import com.global.api.terminals.ingenico.variables.PaymentMethod;
+import com.global.api.terminals.ingenico.variables.PaymentMode;
+import com.global.api.terminals.ingenico.variables.TransactionSubTypes;
 
 public interface ITerminalResponse extends IDeviceResponse {
     String getResponseCode();
@@ -68,12 +72,33 @@ public interface ITerminalResponse extends IDeviceResponse {
     void setApplicationLabel(String applicationLabel);
     String getApplicationId();
     void setApplicationId(String applicationId);
-//    ApplicationCryptogramType getApplicationCryptogramType();
-//    void setApplicationCryptogramType(ApplicationCryptogramType applicationCryptogramType);
+    ApplicationCryptogramType getApplicationCryptogramType();
+    void setApplicationCryptogramType(ApplicationCryptogramType applicationCryptogramType);
     String getApplicationCryptogram();
     void setApplicationCryptogram(String applicationCryptogram);
     String getCardHolderVerificationMethod();
     void setCardHolderVerificationMethod(String cardHolderVerificationMethod);
     String getTerminalVerificationResults();
     void setTerminalVerificationResults(String terminalVerificationResults);
+    //--
+    String getCurrencyCode();
+    void setCurrencyCode(String currencyCode);
+    String getPrivateData();
+    void setPrivateData(String privateData);
+    BigDecimal getFinalTransactionAmount();
+    void setFinalTransactionAmount(BigDecimal finalTransactionAmount);
+    String getPaymentMethod();
+    void setPaymentMethod(PaymentMethod paymentMethod);
+    String getTransactionSubType();
+    void setTransactionSubType(TransactionSubTypes transactionSubType);
+    BigDecimal getSplitSaleAmount();
+    void setSplitSaleAmount(BigDecimal splitSaleAmount);
+    BigDecimal getDynamicCurrencyCodeAmount();
+    void setDyanmicCurrencyCodeAmount(BigDecimal dynamicCurrencyCodeAmount);
+    String getDynamicCurrencyCode();
+    void setDynamicCurrencyCode(String dynamicCurrencyCode);
+    String getDynamicCurrencyCodeStatus();
+    void setDynamicCurrencyCodeStatus(DynamicCurrencyStatus status);
+    String getPaymentMode();
+    void setPaymentMode(PaymentMode paymentMode);
 }

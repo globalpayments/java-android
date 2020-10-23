@@ -30,6 +30,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import static com.global.api.terminals.TerminalUtilities.calculateLRC;
 import static java.nio.charset.StandardCharsets.*;
@@ -75,11 +76,17 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
             acceptClient();
 
             // Start thread for Receiving data.
-            new Thread(new Runnable() {
-                public void run() {
-                    receviedData();
-                }
-            }).start();
+            if (dataReceiving == null) {
+                new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            analyzeReceivedData();
+                        } catch (ApiException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+            }
 
         } catch (ConfigurationException | IOException e) {
             throw new ConfigurationException(e.getMessage());
@@ -210,9 +217,109 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
         }
     }
 
-    private void receviedData() {
+//    private void receviedData() {
+//        try {
+//            byte[] headerBuffer = new byte[2];
+//            while (_readData) {
+//                if (_settings.getConnectionMode() == ConnectionModes.PAY_AT_TABLE) {
+//                    byte[] buffer = new byte[8192];
+//                    _in.read(buffer, 0, buffer.length);
+//
+//                    MessageWriter byteArr = new MessageWriter();
+//                    for (int i = 0; i < buffer.length; i++) {
+//                        byteArr.add(buffer[i]);
+//
+//                        if (buffer[i] == ControlCodes.ETX.getByte()) {
+//                            byteArr.add(buffer[i + 1]);
+//                            break;
+//                        }
+//                    }
+//                    Integer arrLen = byteArr.toArray().length;
+//                    if (arrLen > 0) {
+//
+//                        String raw = TerminalUtilities.getString(byteArr.toArray());
+//                        String dataETX = raw.substring(1, raw.length() - 2);
+//                        String receivedLRC = raw.substring(raw.length() - 1);
+//
+//                        byte[] calculateLRC = TerminalUtilities.calculateLRC(dataETX);
+//                        String calculatedLRC = new String(calculateLRC, UTF_8);
+//
+//                        if (calculatedLRC.contentEquals(receivedLRC)) {
+//                            String data = dataETX;
+//
+//                            PATRequest patRequest = new PATRequest(data.getBytes());
+//                            if (_onPayAtTableRequest != null) {
+//                                _onPayAtTableRequest.onPayAtTableRequest(patRequest);
+//                            }
+//                        }
+//                    }
+//                } else {
+//                    int dataLength = TerminalUtilities.headerLength(headerBuffer);
+//                    byte[] dataBuffer = new byte[dataLength + 2];
+//
+//                    Thread.sleep(1000);
+//                    _in.read(dataBuffer, 0, dataBuffer.length);
+//
+//                    if (!_readData) {
+//                        break;
+//                    }
+//
+//                    if (_receivingException != null) {
+//                        dataBuffer = null;
+//                    }
+//
+//                    boolean incomplete = true;
+//                    int offset = 0;
+//                    int tempLength = dataLength;
+//
+//                    do {
+//                        int bytesReceived = _in.read(dataBuffer, offset, tempLength);
+//
+//                        if (!_readData) {
+//                            break;
+//                        }
+//
+//                        if (bytesReceived != tempLength) {
+//                            offset += bytesReceived;
+//                            tempLength -= bytesReceived;
+//                        } else {
+//                            incomplete = false;
+//                        }
+//                    } while (incomplete);
+//
+//                    byte[] readBuffer = new byte[dataLength];
+//                    System.arraycopy(dataBuffer, 0, readBuffer, 0, dataLength);
+//
+//                    if (isBroadcast(readBuffer)) {
+//                        BroadcastMessage broadcastMessage = new BroadcastMessage(readBuffer);
+//                        if (onBroadcastMessage != null) {
+//                            onBroadcastMessage.broadcastReceived(broadcastMessage.getCode(),
+//                                    broadcastMessage.getMessage());
+//                        }
+//                    } else if (isKeepAlive(readBuffer) && new INGENICO_GLOBALS().KEEPALIVE) {
+//                        _isKeepAlive = true;
+//                        byte[] kResponse = keepAliveResponse(readBuffer);
+//                        _out.write(kResponse);
+//                        _out.flush();
+//                    } else {
+//                        _terminalResponse = readBuffer;
+//                        Log.i("Response 1:", String.valueOf(_terminalResponse.length));
+//                        Log.i("Response 2:", Arrays.toString(_terminalResponse));
+//                        Log.i("Response 3:", Arrays.toString(readBuffer));
+//                    }
+//                }
+//            }
+//        } catch (Exception e) {
+//            if (_isResponseNeeded || _isKeepAlive) {
+//                _receivingException = new ApiException("Socket Error: " + e.getMessage());
+//            }
+//        }
+//    }
+
+    private void analyzeReceivedData() throws ApiException {
         try {
             byte[] headerBuffer = new byte[2];
+
             while (_readData) {
                 if (_settings.getConnectionMode() == ConnectionModes.PAY_AT_TABLE) {
                     byte[] buffer = new byte[8192];
@@ -227,18 +334,19 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
                             break;
                         }
                     }
+
                     Integer arrLen = byteArr.toArray().length;
                     if (arrLen > 0) {
-
                         String raw = TerminalUtilities.getString(byteArr.toArray());
                         String dataETX = raw.substring(1, raw.length() - 2);
+
                         String receivedLRC = raw.substring(raw.length() - 1);
 
                         byte[] calculateLRC = TerminalUtilities.calculateLRC(dataETX);
-                        String calculatedLRC = new String(calculateLRC, UTF_8);
+                        String calculatedLRC = new String(calculateLRC, StandardCharsets.UTF_8);
 
                         if (calculatedLRC.contentEquals(receivedLRC)) {
-                            String data = dataETX;
+                            String data = raw.substring(1, raw.length() - 2);
 
                             PATRequest patRequest = new PATRequest(data.getBytes());
                             if (_onPayAtTableRequest != null) {
@@ -247,61 +355,73 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
                         }
                     }
                 } else {
-                    int dataLength = TerminalUtilities.headerLength(headerBuffer);
-                    byte[] dataBuffer = new byte[dataLength + 2];
-
-                    Thread.sleep(1000);
-                    _in.read(dataBuffer, 0, dataBuffer.length);
+                    int readHeader = _in.read(headerBuffer, 0, headerBuffer.length);
 
                     if (!_readData) {
                         break;
                     }
 
-                    if (_receivingException != null) {
-                        dataBuffer = null;
+                    if (!_isKeepAlive && _isResponseNeeded) {
+                        _socket.setSoTimeout(_settings.getTimeout());
                     }
 
-                    boolean incomplete = true;
-                    int offset = 0;
-                    int tempLength = dataLength;
+                    if (readHeader == -1) {
+                        _receivingException = new ApiException("Terminal disconnected");
+                    }
 
-                    do {
-                        int bytesReceived = _in.read(dataBuffer, offset, tempLength);
+                    int dataLength = TerminalUtilities.headerLength(headerBuffer);
+                    if (dataLength > 0) {
+                        byte[] dataBuffer = new byte[dataLength];
 
-                        if (!_readData) {
-                            break;
-                        }
+                        boolean incomplete = true;
+                        int offset = 0;
+                        int tempLength = dataLength;
 
-                        if (bytesReceived != tempLength) {
-                            offset += bytesReceived;
-                            tempLength -= bytesReceived;
+                        do {
+                            int bytesReceived = _in.read(dataBuffer, offset, tempLength);
+
+                            if (!_readData) {
+                                break;
+                            }
+
+                            if (bytesReceived != tempLength) {
+                                offset += bytesReceived;
+                                tempLength -= bytesReceived;
+                            } else {
+                                incomplete = false;
+                            }
+                        } while (incomplete);
+
+                        byte[] readBuffer = new byte[dataLength];
+                        System.arraycopy(dataBuffer, 0, readBuffer, 0, dataLength);
+
+                        if (isBroadcast(readBuffer)) {
+                            BroadcastMessage broadcastMessage = new BroadcastMessage(readBuffer);
+                            if (onBroadcastMessage != null) {
+                                onBroadcastMessage.broadcastReceived(broadcastMessage.getCode(),
+                                        broadcastMessage.getMessage());
+                            }
+                        } else if (isKeepAlive(readBuffer) && new INGENICO_GLOBALS().KEEPALIVE) {
+                            _isKeepAlive = true;
+                            byte[] kResponse = keepAliveResponse(readBuffer);
+                            _out.write(kResponse);
+                            _out.flush();
                         } else {
-                            incomplete = false;
+                            _terminalResponse = readBuffer;
+                            Log.i("RESPONSE:", String.valueOf(_terminalResponse.length));
                         }
-                    } while (incomplete);
-
-                    byte[] readBuffer = new byte[dataLength];
-                    System.arraycopy(dataBuffer, 0, readBuffer, 0, dataLength);
-
-                    if (isBroadcast(readBuffer)) {
-                        BroadcastMessage broadcastMessage = new BroadcastMessage(readBuffer);
-                        if (onBroadcastMessage != null) {
-                            onBroadcastMessage.broadcastReceived(broadcastMessage.getCode(),
-                                    broadcastMessage.getMessage());
-                        }
-                    } else if (isKeepAlive(readBuffer) && new INGENICO_GLOBALS().KEEPALIVE) {
-                        _isKeepAlive = true;
-                        byte[] kResponse = keepAliveResponse(readBuffer);
-                        _out.write(kResponse);
-                        _out.flush();
                     } else {
-                        _terminalResponse = readBuffer;
+                        _receivingException = new ApiException("No data received");
                     }
                 }
             }
         } catch (Exception e) {
             if (_isResponseNeeded || _isKeepAlive) {
                 _receivingException = new ApiException("Socket Error: " + e.getMessage());
+            }
+
+            if (_readData) {
+                analyzeReceivedData();
             }
         }
     }
