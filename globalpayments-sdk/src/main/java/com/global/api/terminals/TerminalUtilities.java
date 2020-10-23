@@ -11,6 +11,7 @@ import com.global.api.entities.enums.IStringConstant;
 import com.global.api.entities.enums.MessageFormat;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.terminals.abstractions.IRequestSubGroup;
+import com.global.api.utils.Extensions;
 import com.global.api.utils.MessageWriter;
 
 import java.nio.charset.StandardCharsets;
@@ -57,7 +58,9 @@ public class TerminalUtilities {
         String hex = String.format("%04x", buffer.length);
         String fDigit = Character.toString(hex.charAt(0)) + hex.charAt(1);
         String sDigit = Character.toString(hex.charAt(2)) + hex.charAt(3);
-        return String.format("%c%c", (char) Integer.parseInt(fDigit, 16), (char) Integer.parseInt(sDigit, 16));
+
+        return String.format("%c%c", (char) Extensions.parseUnsignedInt(fDigit, 16), (char) Extensions.parseUnsignedInt(sDigit, 16));
+
     }
 
     public static DeviceMessage buildIngenicoRequest(String message, ConnectionModes settings) throws BuilderException {

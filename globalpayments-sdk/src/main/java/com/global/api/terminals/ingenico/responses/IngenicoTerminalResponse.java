@@ -7,12 +7,7 @@ import com.global.api.entities.enums.ApplicationCryptogramType;
 import com.global.api.terminals.abstractions.IDeviceResponse;
 import com.global.api.terminals.abstractions.ITerminalResponse;
 import com.global.api.terminals.ingenico.variables.PaymentMethod;
-import com.global.api.terminals.ingenico.variables.TransactionStatus;
-import com.global.api.terminals.ingenico.variables.TransactionSubTypes;
-import com.global.api.utils.Extensions;
-import com.global.api.terminals.ingenico.variables.DynamicCurrencyStatus;
 import com.global.api.terminals.ingenico.variables.ParseFormat;
-import com.global.api.terminals.ingenico.variables.PaymentMode;
 
 public class IngenicoTerminalResponse extends IngenicoBaseResponse implements ITerminalResponse, IDeviceResponse {
     private String responseText;

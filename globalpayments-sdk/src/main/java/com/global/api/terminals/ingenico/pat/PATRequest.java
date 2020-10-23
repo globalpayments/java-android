@@ -1,9 +1,14 @@
 package com.global.api.terminals.ingenico.pat;
 
+import android.util.Log;
+import android.widget.Toast;
+
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.terminals.ingenico.variables.INGENICO_GLOBALS;
 import com.global.api.terminals.ingenico.variables.PATPrivateDataCode;
 import com.global.api.terminals.ingenico.variables.PATRequestType;
+import com.global.api.terminals.ingenico.variables.PATResponseType;
+import com.global.api.terminals.ingenico.variables.TLVFormat;
 import com.global.api.utils.TypeLengthValue;
 
 import org.w3c.dom.Document;
@@ -14,6 +19,7 @@ import org.xml.sax.InputSource;
 
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutionException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -72,15 +78,16 @@ public class PATRequest {
             if (buffer != null) {
                 _rawData = new String(buffer, StandardCharsets.UTF_8);
 
+                // XML Format
                 if (_rawData.contains(new INGENICO_GLOBALS().XML_TAG)) {
                     _rawData = new String(_rawData.getBytes(), StandardCharsets.ISO_8859_1);
 
-                    if (_rawData.endsWith(">")) {
+                    if (!_rawData.endsWith(">")) {
                         char[] xmlContentArr = _rawData.toCharArray();
 
-                        for (int i = _rawData.length() - 1; i <= _rawData.length(); i++) {
+                        for (int i = _rawData.length() - 1; i <= _rawData.length(); i--) {
                             if (xmlContentArr[i] == '>') {
-                                _xmlData = _rawData.substring(0, (i+1));
+                                _xmlData = _rawData.substring(0, (i + 1));
                                 break;
                             }
                         }
@@ -93,6 +100,7 @@ public class PATRequest {
                     Document doc = builder.parse(new InputSource(new StringReader(_xmlData)));
 
                     String rootTag = doc.getDocumentElement().getNodeName();
+
                     if (rootTag.equals(new INGENICO_GLOBALS().ADDITIONAL_MSG_ROOT)) {
                         _requestType = PATRequestType.ADDITIONAL_MESSAGE;
                     } else if (rootTag.equals(new INGENICO_GLOBALS().TRANSFER_DATA_REQUEST)) {
@@ -107,7 +115,7 @@ public class PATRequest {
 
                             if (sType.equals("SPLITSALE REPORT")) {
                                 _requestType = PATRequestType.SPLITSALE_REPORT;
-                            } else if (sType.equals("MERCHANT")) {
+                            } else if (sType.equals("CUSTOMER")) {
                                 _requestType = PATRequestType.TICKET;
                             } else {
                                 _requestType = PATRequestType.EOD_REPORT;
@@ -116,11 +124,17 @@ public class PATRequest {
                             throw new ApiException("First child node is not an element");
                         }
                     } else {
-                        throw new ApiException("There root tag of the xml cannot recognize");
+                        throw new ApiException("The root tag of the xml cannot recognize");
                     }
                 } else {
+                    // Workaround for split sale but not final logic
+                    if (_rawData.toLowerCase().contains("split_sale")) {
+                        _requestType = PATRequestType.SPLITSALE_REPORT;
+                        _xmlData = _rawData;
+                    }
+
                     // Message Frame 2 Format
-                    if (buffer.length >= 80) {
+                    else if (buffer.length >= 80) {
                         _requestType = PATRequestType.TRANSACTION_OUTCOME;
                         _transactionOutcome = new TransactionOutcome(buffer);
                     } else {
@@ -128,7 +142,7 @@ public class PATRequest {
                         Integer type = Integer.parseInt(_rawData.substring(11, 12));
                         _requestType = PATRequestType.getEnumName(type);
 
-                        String privData = _rawData.substring(16, _rawData.length());
+                        String privData = _rawData.substring(16);
                         if (privData.length() < 55) {
                             switch (_requestType) {
                                 case TABLE_LOCK:
@@ -144,7 +158,7 @@ public class PATRequest {
                             _waiterId = (String) _tlv.getValue((byte) PATPrivateDataCode.WaiterId.getValue(),
                                     String.class, null);
                             _tableNumber = (String) _tlv.getValue((byte) PATPrivateDataCode.TableId.getValue(),
-                                    String.class, null);
+                                    String.class, TLVFormat.PayAtTable);
                             _terminalId = (String) _tlv.getValue((byte) PATPrivateDataCode.TID.getValue(),
                                     String.class, null);
                             _terminalCurrency = (String) _tlv.getValue(

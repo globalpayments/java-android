@@ -42,6 +42,7 @@ public class TransactionOutcome extends DeviceResponse {
 	private void parseData(byte[] buffer) throws ApiException {
 		try {
 			String strBuffer = new String(buffer, StandardCharsets.UTF_8);
+
 			_transactionStatus = TransactionStatus.getEnumName(Integer.parseInt(strBuffer.substring(2, 3)));
 			_amount = strBuffer.substring(3, 11);
 			_repFields = new DataResponse(strBuffer.substring(12, 67).getBytes());

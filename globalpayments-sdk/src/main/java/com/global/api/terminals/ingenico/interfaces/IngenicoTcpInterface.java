@@ -80,7 +80,6 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
                     receviedData();
                 }
             }).start();
-//            new Thread(new AnalyzeReceivedDataTask()).start();
 
         } catch (ConfigurationException | IOException e) {
             throw new ConfigurationException(e.getMessage());
@@ -211,92 +210,6 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
         }
     }
 
-//    class AnalyzeReceivedDataTask implements Runnable {
-//        @Override
-//        public void run() {
-//            try {
-//                byte[] headerBuffer = new byte[2];
-//                while (_readData) {
-//                    if (_settings.getConnectionMode() == ConnectionModes.PAY_AT_TABLE) {
-//                        byte[] buffer = new byte[8192];
-//                        _in.read(buffer, 0, buffer.length);
-//
-//                        MessageWriter byteArr = new MessageWriter();
-//                        for (int i = 0; i < buffer.length; i++) {
-//                            byteArr.add(buffer[i]);
-//
-//                            if (buffer[i] == ControlCodes.ETX.getByte()) {
-//                                byteArr.add(buffer[i + 1]);
-//                                break;
-//                            }
-//                        }
-//                        Log.i("TCPINTERFACE", "Dumaan dito b4 arrlen");
-//                        Integer arrLen = byteArr.toArray().length;
-//                        if (arrLen > 0) {
-//                            Log.i("TCPINTERFACE", "Dumaan dito after arrlen");
-//
-//                            String raw = TerminalUtilities.getString(byteArr.toArray());
-//                            String dataETX = raw.substring(1, raw.length() - 2);
-//                            String receivedLRC = raw.substring(raw.length() - 1);
-//
-//                            byte[] byteMessageArray = dataETX.getBytes(StandardCharsets.UTF_8);
-//                            String result = String.valueOf(calculateLRC(byteMessageArray));
-//                            byte[] ArrMessage = result.getBytes();
-//                            String calculatedLRC = new String(ArrMessage, StandardCharsets.UTF_8);
-//
-//                            Log.i("TCPINTERFACE", "CalculatedLRCbefore" + calculatedLRC + "ReceivedLRC" + receivedLRC);
-//
-//                            if (calculatedLRC.contentEquals(receivedLRC)) {
-//                                String data = dataETX;
-//
-//                                Log.i("TCPINTERFACE", "CalculatedLRCafter" + calculatedLRC + "ReceivedLRC" + receivedLRC);
-//
-//                                PATRequest patRequest = new PATRequest(data.getBytes());
-//                                if (_onPayAtTableRequest != null) {
-//                                    _onPayAtTableRequest.onPayAtTableRequest(patRequest);
-//                                }
-//                            }
-//                        }
-//                    } else {
-//                        _in.read(headerBuffer, 0, headerBuffer.length);
-//                        int dataLength = TerminalUtilities.headerLength(headerBuffer);
-//                        byte[] dataBuffer = new byte[dataLength + 2];
-//
-//                        Thread.sleep(1000);
-//                        _in.read(dataBuffer, 0, dataBuffer.length);
-//
-//                        if (!_readData) {
-//                            break;
-//                        }
-//
-//                        if (_receivingException != null) {
-//                            dataBuffer = null;
-//                        }
-//
-//                        if (isBroadcast(dataBuffer)) {
-//                            BroadcastMessage broadcastMessage = new BroadcastMessage(dataBuffer);
-//                            if (onBroadcastMessage != null) {
-//                                onBroadcastMessage.broadcastReceived(broadcastMessage.getCode(),
-//                                        broadcastMessage.getMessage());
-//                            }
-//                        } else if (isKeepAlive(dataBuffer) && new INGENICO_GLOBALS().KEEPALIVE) {
-//                            _isKeepAlive = true;
-//                            byte[] kResponse = keepAliveResponse(dataBuffer);
-//                            _out.write(kResponse);
-//                            _out.flush();
-//                        } else {
-//                            _terminalResponse = dataBuffer;
-//                        }
-//                    }
-//                }
-//            } catch (Exception e) {
-//                if (_isResponseNeeded || _isKeepAlive) {
-//                    _receivingException = new ApiException("Socket Error: " + e.getMessage());
-//                }
-//            }
-//        }
-//    }
-
     private void receviedData() {
         try {
             byte[] headerBuffer = new byte[2];
@@ -321,23 +234,11 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
                         String dataETX = raw.substring(1, raw.length() - 2);
                         String receivedLRC = raw.substring(raw.length() - 1);
 
-//                        byte[] calculateLRC = TerminalUtilities.calculateLRC(dataETX);
-//                        String calculatedLRC = new String(calculateLRC, StandardCharsets.UTF_8);
-
                         byte[] calculateLRC = TerminalUtilities.calculateLRC(dataETX);
                         String calculatedLRC = new String(calculateLRC, UTF_8);
 
-//                        byte[] byteMessageArray = dataETX.getBytes(StandardCharsets.UTF_8);
-//                        String result = String.valueOf(calculateLRC(byteMessageArray));
-//                        byte[] ArrMessage = result.getBytes();
-//                        String calculatedLRC = new String(ArrMessage, StandardCharsets.UTF_8);
-
-                        Log.i("TCPINTERFACE", "CalculatedLRCbefore" + calculatedLRC + "ReceivedLRC" + receivedLRC);
-
                         if (calculatedLRC.contentEquals(receivedLRC)) {
                             String data = dataETX;
-
-                            Log.i("TCPINTERFACE", "CalculatedLRCafter" + calculatedLRC + "ReceivedLRC" + receivedLRC);
 
                             PATRequest patRequest = new PATRequest(data.getBytes());
                             if (_onPayAtTableRequest != null) {
@@ -346,7 +247,6 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
                         }
                     }
                 } else {
-                    _in.read(headerBuffer, 0, headerBuffer.length);
                     int dataLength = TerminalUtilities.headerLength(headerBuffer);
                     byte[] dataBuffer = new byte[dataLength + 2];
 
@@ -361,19 +261,41 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
                         dataBuffer = null;
                     }
 
-                    if (isBroadcast(dataBuffer)) {
-                        BroadcastMessage broadcastMessage = new BroadcastMessage(dataBuffer);
+                    boolean incomplete = true;
+                    int offset = 0;
+                    int tempLength = dataLength;
+
+                    do {
+                        int bytesReceived = _in.read(dataBuffer, offset, tempLength);
+
+                        if (!_readData) {
+                            break;
+                        }
+
+                        if (bytesReceived != tempLength) {
+                            offset += bytesReceived;
+                            tempLength -= bytesReceived;
+                        } else {
+                            incomplete = false;
+                        }
+                    } while (incomplete);
+
+                    byte[] readBuffer = new byte[dataLength];
+                    System.arraycopy(dataBuffer, 0, readBuffer, 0, dataLength);
+
+                    if (isBroadcast(readBuffer)) {
+                        BroadcastMessage broadcastMessage = new BroadcastMessage(readBuffer);
                         if (onBroadcastMessage != null) {
                             onBroadcastMessage.broadcastReceived(broadcastMessage.getCode(),
                                     broadcastMessage.getMessage());
                         }
-                    } else if (isKeepAlive(dataBuffer) && new INGENICO_GLOBALS().KEEPALIVE) {
+                    } else if (isKeepAlive(readBuffer) && new INGENICO_GLOBALS().KEEPALIVE) {
                         _isKeepAlive = true;
-                        byte[] kResponse = keepAliveResponse(dataBuffer);
+                        byte[] kResponse = keepAliveResponse(readBuffer);
                         _out.write(kResponse);
                         _out.flush();
                     } else {
-                        _terminalResponse = dataBuffer;
+                        _terminalResponse = readBuffer;
                     }
                 }
             }

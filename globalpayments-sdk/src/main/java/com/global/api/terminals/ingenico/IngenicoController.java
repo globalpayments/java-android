@@ -58,7 +58,6 @@ import com.global.api.utils.Extensions;
 
 public class IngenicoController extends DeviceController {
     private IDeviceInterface _device;
-    private String xmlContent2;
 
     public IngenicoController(ITerminalConfiguration settings) throws ConfigurationException {
         super(settings);
@@ -119,33 +118,25 @@ public class IngenicoController extends DeviceController {
     }
 
     private byte[] getXMLContent(String xmlPath) throws BuilderException {
-        byte[] result = new byte[0];
-        int size = (int) xmlPath.length();
-        byte bytes[] = new byte[size];
-        byte tmpBuff[] = new byte[size];
+        byte[] result;
+        String xmlContent;
+        byte[] xmlByteArr;
 
         try {
             if (xmlPath.isEmpty()) {
                 throw new BuilderException("XML Path is Empty");
             }
-            byte[] xmlByteArr = new byte[0];
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 xmlByteArr = Files.readAllBytes(Paths.get(xmlPath));
             } else {
-                RandomAccessFile f = new RandomAccessFile(xmlPath, "r");
-                byte[] b = new byte[(int)f.length()];
-                f.readFully(b);
+                RandomAccessFile xml = new RandomAccessFile(xmlPath, "r");
+                byte[] b = new byte[(int)xml.length()];
+                xml.readFully(b);
                 xmlByteArr = b;
             }
-
-            String xmlContent = TerminalUtilities.calculateHeader(xmlByteArr)
-                    + new String(xmlByteArr, StandardCharsets.UTF_8);
+            Log.i("TEST", "TEST XML" + new String(xmlByteArr, StandardCharsets.UTF_8));
+            xmlContent = new String(xmlByteArr, StandardCharsets.UTF_8);
             result = xmlContent.getBytes(StandardCharsets.UTF_8);
-            Log.i("IngenicoController", "FILE CONTENT:" + result);
-            Log.i("IngenicoController", "FILE CONTENT:2" + xmlByteArr);
-
-
         } catch (Exception e) {
             throw new BuilderException(e.getMessage());
         }
@@ -265,12 +256,10 @@ public class IngenicoController extends DeviceController {
     private IDeviceMessage buildPATTResponseMessage(TerminalAuthBuilder builder) throws BuilderException {
         StringBuilder message = new StringBuilder();
 
-
         // PAT Functionalities
         if (builder.getXMLPath() != null) {
             byte[] content = getXMLContent(builder.getXMLPath());
-            String xml = new String(content, StandardCharsets.ISO_8859_1)
-                    .substring(3);
+            String xml = new String(content, StandardCharsets.ISO_8859_1);
             message.append(xml);
         } else {
             String referenceNumber = new INGENICO_RESP().PAT_EPOS_NUMBER;
