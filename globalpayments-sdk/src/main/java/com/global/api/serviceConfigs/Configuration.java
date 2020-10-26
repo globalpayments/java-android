@@ -15,6 +15,7 @@ public abstract class Configuration {
     public int getTimeout() {
         return timeout;
     }
+
     public void setTimeout(int timeout) {
         this.timeout = timeout;
     }
@@ -22,6 +23,7 @@ public abstract class Configuration {
     public String getServiceUrl() {
         return serviceUrl;
     }
+
     public void setServiceUrl(String serviceUrl) {
         this.serviceUrl = serviceUrl;
     }
@@ -29,6 +31,7 @@ public abstract class Configuration {
     public boolean isEnableLogging() {
         return enableLogging;
     }
+
     public void setEnableLogging(boolean enableLogging) {
         this.enableLogging = enableLogging;
     }
@@ -36,6 +39,7 @@ public abstract class Configuration {
     public boolean isForceGatewayTimeout() {
         return forceGatewayTimeout;
     }
+
     public void setForceGatewayTimeout(boolean forceGatewayTimeout) {
         this.forceGatewayTimeout = forceGatewayTimeout;
     }
@@ -43,6 +47,7 @@ public abstract class Configuration {
     public Environment getEnvironment() {
         return environment;
     }
+
     public void setEnvironment(Environment environment) {
         this.environment = environment;
     }

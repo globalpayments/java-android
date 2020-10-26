@@ -1,17 +1,17 @@
 package com.global.api.builders.validations;
 
-import android.util.Log;
-
 import com.global.api.builders.BaseBuilder;
 import com.global.api.builders.TransactionBuilder;
 import com.global.api.entities.enums.IFlag;
-import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.BuilderException;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 public class Validations {
     class ValidationKey {
@@ -72,9 +72,6 @@ public class Validations {
 
             Set<?> values = key.getSet();
             if(values.contains(value)) {
-                Long testVariable = TransactionType.Refund.getLongValue();
-                Long testVariable2 = TransactionType.PayAtTable.getLongValue();
-                Log.d("VALIDATIONS", testVariable +  ":" + testVariable2);
                 for(ValidationTarget validation: rules.get(key)) {
                     ValidationClause clause = validation.getClause();
                     if(clause == null) continue;

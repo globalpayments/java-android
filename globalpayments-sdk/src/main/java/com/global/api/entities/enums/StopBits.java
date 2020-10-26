@@ -5,6 +5,12 @@ public enum StopBits {
     Two(2);
 
     int value;
-    StopBits(int value){ this.value = value; }
-    public int getValue() { return this.value; }
+
+    StopBits(int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
+        return this.value;
+    }
 }

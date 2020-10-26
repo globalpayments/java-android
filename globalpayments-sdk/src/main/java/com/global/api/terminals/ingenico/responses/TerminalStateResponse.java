@@ -67,20 +67,27 @@ public class TerminalStateResponse extends IngenicoTerminalResponse implements I
                 String test = new String(response, StandardCharsets.UTF_8);
                 String t1 = test;
 
-                TypeLengthValue tlv = new TypeLengthValue(Extensions.subArray(response, 12, 67));
+                TypeLengthValue tlv = new TypeLengthValue(
+                        Extensions.subArray(response, 12, 67));
                 tlv.setTLVFormat(TLVFormat.State);
 
                 String terminalStatusData = (String) tlv
-                        .getValue((byte) StatusResponseCode.Status.getStatusResponseCode(), String.class, null);
-                terminalStatus = TerminalStatus.getEnumName(Integer.parseInt(terminalStatusData.substring(0, 1)));
-                salesMode = SalesMode.getEnumName(Integer.parseInt(terminalStatusData.substring(1, 2)));
+                        .getValue((byte) StatusResponseCode.Status.getStatusResponseCode(),
+                                String.class, null);
+                terminalStatus = TerminalStatus.getEnumName(
+                        Integer.parseInt(terminalStatusData.substring(0, 1)));
+                salesMode = SalesMode.getEnumName(
+                        Integer.parseInt(terminalStatusData.substring(1, 2)));
                 terminalCapabilities = terminalStatusData.substring(2, 8);
                 additionalTerminalCap = terminalStatusData.substring(8, 18);
-                appVersion = (String) tlv.getValue((byte) StatusResponseCode.AppVersion.getStatusResponseCode(),
+                appVersion = (String) tlv.getValue((byte)
+                                StatusResponseCode.AppVersion.getStatusResponseCode(),
                         String.class, null);
-                handsetNumber = (String) tlv.getValue((byte) StatusResponseCode.HandsetNumber.getStatusResponseCode(),
+                handsetNumber = (String) tlv.getValue((byte)
+                                StatusResponseCode.HandsetNumber.getStatusResponseCode(),
                         String.class, null);
-                terminalId = (String) tlv.getValue((byte) StatusResponseCode.TerminalId.getStatusResponseCode(),
+                terminalId = (String) tlv.getValue((byte)
+                                StatusResponseCode.TerminalId.getStatusResponseCode(),
                         String.class, null);
             }
         } catch (Exception e) {

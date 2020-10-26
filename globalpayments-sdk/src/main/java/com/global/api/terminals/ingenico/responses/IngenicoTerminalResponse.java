@@ -1,9 +1,6 @@
 package com.global.api.terminals.ingenico.responses;
 
-import android.util.Log;
-
 import java.math.BigDecimal;
-import java.util.Arrays;
 
 import com.global.api.entities.enums.ApplicationCryptogramType;
 import com.global.api.terminals.abstractions.ITerminalResponse;
@@ -47,8 +44,6 @@ public class IngenicoTerminalResponse extends IngenicoBaseResponse implements IT
 
     public IngenicoTerminalResponse(byte[] buffer, ParseFormat format) {
         super(buffer, format);
-        Log.i("SUPER BUFFER", String.valueOf(buffer.length));
-        Log.i("SUPER BUFFER", Arrays.toString(buffer));
     }
 
     public BigDecimal getTransactionAmount() {

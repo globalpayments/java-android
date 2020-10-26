@@ -1,6 +1,7 @@
 package com.global.api.terminals.ingenico.variables;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public enum PaymentMode {
     APPLICATION(0),

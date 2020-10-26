@@ -22,8 +22,6 @@ import com.global.api.terminals.messaging.IOnPayAtTableRequestInterface;
 public abstract class DeviceController implements IDisposable {
     protected ITerminalConfiguration settings;
     protected IDeviceCommInterface _connector;
-    protected IDeviceInterface _interface;
-//    protected IRequestIdProvider requestIdProvider;
 
     public ConnectionModes getConnectionModes() {
         if (settings != null)
@@ -60,9 +58,7 @@ public abstract class DeviceController implements IDisposable {
     }
 
     public DeviceController(ITerminalConfiguration settings) throws ConfigurationException {
-//        settings.validate();
         this.settings = settings;
-//        this.requestIdProvider = settings.getRequestIdProvider();
         _connector = configureConnector();
         _connector.setMessageSentHandler(new IMessageSentInterface() {
             public void messageSent(String message) {

@@ -1,10 +1,7 @@
 package com.global.api.builders;
 
-import com.global.api.ServicesContainer;
 import com.global.api.entities.enums.ReportType;
 import com.global.api.entities.enums.TimeZoneConversion;
-import com.global.api.entities.exceptions.ApiException;
-import com.global.api.gateways.IPaymentGateway;
 
 public abstract class ReportBuilder<TResult> extends BaseBuilder<TResult> {
     private ReportType reportType;

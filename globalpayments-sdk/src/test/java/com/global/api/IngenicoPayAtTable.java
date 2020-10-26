@@ -1,8 +1,9 @@
 package com.global.api;
 
-import android.os.Handler;
+import android.os.Looper;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 import org.junit.Test;
 
@@ -38,13 +39,16 @@ public class IngenicoPayAtTable {
 				new Thread(new Runnable() {
 					@Override
 					public void run () {
-						payAtTableResponse(payAtTableRequest);
+						if (payAtTableRequest.getRequestType() == PATRequestType.TABLE_UNLOCK) {
+							patFinished();
+						} else {
+							payAtTableResponse(payAtTableRequest);
+						}
 					}
 				}).start();
 			}
 		});
-
-		Thread.sleep(3000 * 1000);
+		Thread.sleep(30 * 1000);
 	}
 
 	private void payAtTableResponse(PATRequest payAtTableRequest) {
@@ -91,5 +95,10 @@ public class IngenicoPayAtTable {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void patFinished() {
+		device.dispose();
+		device = null;
 	}
 }

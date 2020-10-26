@@ -41,11 +41,11 @@ public class TypeLengthValue {
         }
 
         String buffer = new String(_data, StandardCharsets.UTF_8);
-        String getBuffer = new String(new byte[] { type }, StandardCharsets.UTF_8);
+        String getBuffer = new String(new byte[]{type}, StandardCharsets.UTF_8);
         Integer index = buffer.indexOf(getBuffer);
 
         if (index >= 0) {
-            byte[] lengthBuffer = { _data[index + 1], _data[index + 2] };
+            byte[] lengthBuffer = {_data[index + 1], _data[index + 2]};
             Integer length = 0;
 
             if (_format == TLVFormat.Standard) {

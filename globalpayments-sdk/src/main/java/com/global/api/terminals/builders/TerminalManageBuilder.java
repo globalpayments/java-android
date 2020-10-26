@@ -41,15 +41,18 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
     public BigDecimal getAmount() {
         return amount;
     }
+
     public CurrencyType getCurrency() {
         return currency;
     }
+
     public BigDecimal getGratuity() {
         return gratuity;
     }
+
     public String getTransactionId() {
-        if(paymentMethod instanceof TransactionReference)
-            return ((TransactionReference)paymentMethod).getTransactionId();
+        if (paymentMethod instanceof TransactionReference)
+            return ((TransactionReference) paymentMethod).getTransactionId();
         return null;
     }
 
@@ -64,9 +67,9 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
     }
 
     public TerminalManageBuilder withAuthCode(String value) {
-        if(paymentMethod == null || !(paymentMethod instanceof TransactionReference))
+        if (paymentMethod == null || !(paymentMethod instanceof TransactionReference))
             paymentMethod = new TransactionReference();
-        ((TransactionReference)paymentMethod).setAuthCode(value);
+        ((TransactionReference) paymentMethod).setAuthCode(value);
         this.authCode = value;
         return this;
     }
@@ -75,18 +78,21 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
         this.amount = value;
         return this;
     }
+
     public TerminalManageBuilder withCurrency(CurrencyType value) {
         this.currency = value;
         return this;
     }
+
     public TerminalManageBuilder withGratuity(BigDecimal value) {
         this.gratuity = value;
         return this;
     }
+
     public TerminalManageBuilder withTransactionId(String value) {
-        if(paymentMethod == null || !(paymentMethod instanceof TransactionReference))
+        if (paymentMethod == null || !(paymentMethod instanceof TransactionReference))
             paymentMethod = new TransactionReference();
-        ((TransactionReference)paymentMethod).setTransactionId(value);
+        ((TransactionReference) paymentMethod).setTransactionId(value);
         this.transactionId = value;
         return this;
     }
@@ -104,7 +110,8 @@ public class TerminalManageBuilder extends TerminalBuilder<TerminalManageBuilder
     }
 
     public void setupValidations() {
-        this.validations.of(TransactionType.Capture).when("authCode").isNull().check("transactionId").isNotNull();
+        this.validations.of(TransactionType.Capture).when("authCode").isNull()
+                .check("transactionId").isNotNull();
         this.validations.of(TransactionType.Void).check("transactionId").isNotNull();
         this.validations.of(PaymentMethodType.Gift).check("currency").isNotNull();
         this.validations.of(TransactionType.Cancel).check("amount").isNotNull();

@@ -20,7 +20,8 @@ public class ValidationClause {
     public ValidationClause(Validations parent, ValidationTarget target, String propertyName) {
         this(parent, target, propertyName, false);
     }
-    public ValidationClause(Validations parent, ValidationTarget target, String propertyName, boolean precondition) {
+    public ValidationClause(Validations parent, ValidationTarget target, String propertyName,
+                            boolean precondition) {
         this.parent = parent;
         this.target = target;
         this.propertyName = propertyName;
@@ -43,7 +44,8 @@ public class ValidationClause {
                 }
             }
         };
-        this.message = (message != null) ? message : String.format("%s cannot be null for this transaction type.", propertyName);
+        this.message = (message != null) ? message : String.format("%s cannot be null for this " +
+                "transaction type.", propertyName);
         if(precondition)
             return target;
         return parent.of(target.getType()).with(target.getConstraint());
@@ -65,7 +67,8 @@ public class ValidationClause {
                 }
             }
         };
-        this.message = (message != null) ? message : String.format("%s cannot be null for this transaction type.", propertyName);
+        this.message = (message != null) ? message : String.format("%s cannot be null for this " +
+                "transaction type.", propertyName);
         if(precondition)
             return target;
         return parent.of(target.getType()).with(target.getConstraint());
@@ -88,7 +91,8 @@ public class ValidationClause {
                 }
             }
         };
-        this.message = (message != null) ? message : String.format("%s must be an instance of the %s class.", propertyName, clazz.getName());
+        this.message = (message != null) ? message : String.format("%s must be an instance of " +
+                "the %s class.", propertyName, clazz.getName());
         if(precondition)
             return target;
         return parent.of(target.getType()).with(target.getConstraint());
@@ -111,14 +115,16 @@ public class ValidationClause {
                 }
             }
         };
-        this.message = (message != null) ? message : String.format("%s must be an instance of the %s class.", propertyName, clazz.getName());
+        this.message = (message != null) ? message : String.format("%s must be an instance of " +
+                "the %s class.", propertyName, clazz.getName());
         if(precondition)
             return target;
         return parent.of(target.getType()).with(target.getConstraint());
     }
 
     public ValidationTarget isEqualTo(final Object expected) {
-        return isEqualTo(expected, null);
+        return isEqualTo(expected,
+                null);
     }
     public ValidationTarget isEqualTo(final Object expected, String message) {
         callback = new MyCallable() {
@@ -133,14 +139,16 @@ public class ValidationClause {
                 }
             }
         };
-        this.message = (message != null) ? message : String.format("%s was not the expected value %s", propertyName, expected.toString());
+        this.message = (message != null) ? message : String.format("%s was not the expected " +
+                "value %s", propertyName, expected.toString());
         if(precondition)
             return target;
         return parent.of(target.getType()).with(target.getConstraint());
     }
 
     public ValidationTarget isNotEqual(final Object expected) {
-        return isNotEqual(expected, null);
+        return isNotEqual(expected,
+                null);
     }
     public ValidationTarget isNotEqual(final Object expected, String message) {
         callback = new MyCallable() {
@@ -155,7 +163,8 @@ public class ValidationClause {
                 }
             }
         };
-        this.message = (message != null) ? message : String.format("%s cannot be the value %s.", propertyName, expected.toString());
+        this.message = (message != null) ? message : String.format("%s cannot be the " +
+                "value %s.", propertyName, expected.toString());
         if(precondition)
             return target;
         return parent.of(target.getType()).with(target.getConstraint());

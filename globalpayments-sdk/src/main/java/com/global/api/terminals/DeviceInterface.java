@@ -5,33 +5,22 @@ import android.util.Log;
 import java.math.BigDecimal;
 
 import com.global.api.entities.enums.PaymentMethodType;
-//import com.global.api.entities.enums.SafDelete;
-//import com.global.api.entities.enums.SafReportSummary;
-//import com.global.api.entities.enums.SafUpload;
 import com.global.api.entities.enums.SendFileType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
-//import com.global.api.terminals.abstractions.IBatchCloseResponse;
 import com.global.api.terminals.abstractions.IDeviceInterface;
 import com.global.api.terminals.abstractions.IDeviceResponse;
-//import com.global.api.terminals.abstractions.IEODResponse;
 import com.global.api.terminals.abstractions.IInitializeResponse;
-//import com.global.api.terminals.abstractions.ISAFResponse;
-//import com.global.api.terminals.abstractions.ISignatureResponse;
 import com.global.api.terminals.builders.TerminalAuthBuilder;
 import com.global.api.terminals.builders.TerminalManageBuilder;
 import com.global.api.terminals.builders.TerminalReportBuilder;
 import com.global.api.terminals.ingenico.pat.PATRequest;
 import com.global.api.terminals.ingenico.variables.ReceiptType;
 import com.global.api.terminals.ingenico.variables.ReportTypes;
-import com.global.api.terminals.ingenico.variables.TransactionStatus;
 import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.messaging.IOnPayAtTableRequestInterface;
-//import com.global.api.terminals.pax.responses.SAFDeleteResponse;
-//import com.global.api.terminals.pax.responses.SAFSummaryReport;
-//import com.global.api.terminals.pax.responses.SAFUploadResponse;
 
 public abstract class DeviceInterface<T extends DeviceController> implements IDeviceInterface {
     protected T _controller;
@@ -73,18 +62,18 @@ public abstract class DeviceInterface<T extends DeviceController> implements IDe
             public void onPayAtTableRequest(PATRequest payAtTableRequest) {
                 if (onPayAtTableRequest != null) {
                     onPayAtTableRequest.onPayAtTableRequest(payAtTableRequest);
-                    Log.i("DeviceInterface", "Dumaan Dito PAT Request Handler");
                 }
             }
         });
 
-        _requestIdProvider  = _controller.requestIdProvider();
+        _requestIdProvider = _controller.requestIdProvider();
     }
 
     // admin methods
     public IDeviceResponse cancel() throws ApiException {
         throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
     }
+
     public IDeviceResponse closeLane() throws ApiException {
         throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
     }
@@ -125,18 +114,6 @@ public abstract class DeviceInterface<T extends DeviceController> implements IDe
     public IDeviceResponse startCard(PaymentMethodType paymentMethodType) throws ApiException {
         throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
     }
-
-    // batching
-//    public IBatchCloseResponse batchClose() throws ApiException {
-//        throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
-//    }
-//    public SAFUploadResponse safUpload(SafUpload safUploadIndicator) throws ApiException {
-//        throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
-//    }
-//
-//    public SAFDeleteResponse safDelete(SafDelete safDeleteIndicator) throws ApiException {
-//        throw new UnsupportedTransactionException("This function is not supported by the currently configured device.");
-//    }
 
     // credit calls
     public TerminalAuthBuilder creditAuth(BigDecimal amount) throws ApiException {

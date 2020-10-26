@@ -5,6 +5,12 @@ public enum DataBits {
     Eight(8);
 
     int value;
-    DataBits(int value){ this.value = value; }
-    public int getValue() { return this.value; }
+
+    DataBits(int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
+        return this.value;
+    }
 }

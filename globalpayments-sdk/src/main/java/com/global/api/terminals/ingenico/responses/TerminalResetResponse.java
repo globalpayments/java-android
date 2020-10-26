@@ -19,7 +19,8 @@ public class TerminalResetResponse extends IngenicoTerminalResponse implements I
     public void parseResponse(byte[] response) {
         super.parseResponse(response);
         String rawData = new String(response, StandardCharsets.UTF_8);
-        setStatus(TerminalResetStatus.getEnumName(Integer.parseInt(rawData.substring(2, 3))).toString());
+        setStatus(TerminalResetStatus.getEnumName(
+                Integer.parseInt(rawData.substring(2, 3))).toString());
     }
 
     @Override

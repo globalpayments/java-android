@@ -8,54 +8,55 @@ import com.global.api.terminals.ingenico.variables.TransactionStatus;
 import java.nio.charset.StandardCharsets;
 
 public class TransactionOutcome extends DeviceResponse {
-	private DataResponse _repFields;
-	private TransactionStatus _transactionStatus;
-	private String _amount;
-	private String _currencyCode;
-	private String _privateData;
+    private DataResponse _repFields;
+    private TransactionStatus _transactionStatus;
+    private String _amount;
+    private String _currencyCode;
+    private String _privateData;
 
-	public TransactionOutcome(byte[] buffer) throws ApiException {
-		parseData(buffer);
-	}
+    public TransactionOutcome(byte[] buffer) throws ApiException {
+        parseData(buffer);
+    }
 
-	public TransactionStatus getTransactionStatus() {
-		return _transactionStatus;
-	}
+    public TransactionStatus getTransactionStatus() {
+        return _transactionStatus;
+    }
 
 
-	public String getAmount() {
-		return _amount;
-	}
+    public String getAmount() {
+        return _amount;
+    }
 
-	public String getCurrencyCode() {
-		return _currencyCode;
-	}
+    public String getCurrencyCode() {
+        return _currencyCode;
+    }
 
-	public String getPrivateData() {
-		return _privateData;
-	}
+    public String getPrivateData() {
+        return _privateData;
+    }
 
-	public DataResponse getRepFields() {
-		return _repFields;
-	}
+    public DataResponse getRepFields() {
+        return _repFields;
+    }
 
-	private void parseData(byte[] buffer) throws ApiException {
-		try {
-			String strBuffer = new String(buffer, StandardCharsets.UTF_8);
+    private void parseData(byte[] buffer) throws ApiException {
+        try {
+            String strBuffer = new String(buffer, StandardCharsets.UTF_8);
 
-			_transactionStatus = TransactionStatus.getEnumName(Integer.parseInt(strBuffer.substring(2, 3)));
-			_amount = strBuffer.substring(3, 11);
-			_repFields = new DataResponse(strBuffer.substring(12, 67).getBytes());
-			_currencyCode = strBuffer.substring(67, 70);
-			_privateData = strBuffer.substring(70, strBuffer.length());
-			setDeviceResponseText(strBuffer);
-		} catch (Exception e) {
-			throw new ApiException(e.getMessage());
-		}
-	}
+            _transactionStatus = TransactionStatus.getEnumName(
+            		Integer.parseInt(strBuffer.substring(2, 3)));
+            _amount = strBuffer.substring(3, 11);
+            _repFields = new DataResponse(strBuffer.substring(12, 67).getBytes());
+            _currencyCode = strBuffer.substring(67, 70);
+            _privateData = strBuffer.substring(70, strBuffer.length());
+            setDeviceResponseText(strBuffer);
+        } catch (Exception e) {
+            throw new ApiException(e.getMessage());
+        }
+    }
 
-	@Override
-	public String toString() {
-		return getDeviceResponseText();
-	}
+    @Override
+    public String toString() {
+        return getDeviceResponseText();
+    }
 }

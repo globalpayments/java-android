@@ -1,22 +1,8 @@
 package com.global.api.terminals.ingenico;
 
-import android.content.res.AssetManager;
-import android.os.Build;
-import android.os.FileUtils;
-import android.provider.MediaStore;
 import android.util.Log;
 
-import androidx.annotation.RequiresApi;
-
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
-import java.io.Reader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -30,7 +16,6 @@ import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.terminals.DeviceController;
-import com.global.api.terminals.DeviceMessage;
 import com.global.api.terminals.TerminalUtilities;
 import com.global.api.terminals.abstractions.IDeviceCommInterface;
 import com.global.api.terminals.abstractions.IDeviceInterface;
@@ -46,7 +31,6 @@ import com.global.api.terminals.ingenico.responses.IngenicoTerminalReceiptRespon
 import com.global.api.terminals.ingenico.responses.IngenicoTerminalReportResponse;
 import com.global.api.terminals.ingenico.responses.IngenicoTerminalResponse;
 import com.global.api.terminals.ingenico.responses.ReverseResponse;
-import com.global.api.terminals.ingenico.variables.DeviceMode;
 import com.global.api.terminals.ingenico.variables.INGENICO_REQ_CMD;
 import com.global.api.terminals.ingenico.variables.INGENICO_RESP;
 import com.global.api.terminals.ingenico.variables.PATResponseType;
@@ -130,7 +114,7 @@ public class IngenicoController extends DeviceController {
                 xmlByteArr = Files.readAllBytes(Paths.get(xmlPath));
             } else {
                 RandomAccessFile xml = new RandomAccessFile(xmlPath, "r");
-                byte[] b = new byte[(int)xml.length()];
+                byte[] b = new byte[(int) xml.length()];
                 xml.readFully(b);
                 xmlByteArr = b;
             }
@@ -283,7 +267,7 @@ public class IngenicoController extends DeviceController {
             message.append(currencyCode);
             message.append(privateData);
 
-            Log.i("MESSAGE" , decimalFormat.format(amount));
+            Log.i("MESSAGE", decimalFormat.format(amount));
         }
 
         return TerminalUtilities.buildIngenicoRequest(message.toString(), settings.getConnectionMode());

@@ -7,9 +7,16 @@ public enum AdvancedDepositType implements IStringConstant {
     Other("OTHER");
 
     String value;
+
     AdvancedDepositType(String value) {
         this.value = value;
     }
-    public String getValue() { return value; }
-    public byte[] getBytes() { return value.getBytes(); }
+
+    public String getValue() {
+        return value;
+    }
+
+    public byte[] getBytes() {
+        return value.getBytes();
+    }
 }

@@ -5,6 +5,7 @@ import com.global.api.terminals.ingenico.variables.PaymentMethod;
 import com.global.api.terminals.ingenico.variables.RepFieldCode;
 import com.global.api.terminals.ingenico.variables.TransactionSubTypes;
 import com.global.api.utils.TypeLengthValue;
+
 import java.math.BigDecimal;
 
 public class DataResponse {
@@ -21,8 +22,6 @@ public class DataResponse {
     private BigDecimal _splitSaleAmount;
     private DynamicCurrencyStatus _dccStatus;
     private TypeLengthValue _tlv;
-
-    private byte[] _buffer;
 
     public DataResponse(byte[] buffer) {
         _tlv = new TypeLengthValue(buffer);
@@ -120,26 +119,39 @@ public class DataResponse {
 
     private void ParseData() {
         try {
-            _authCode = (String) _tlv.getValue((byte) RepFieldCode.Authcode.getRepFieldCode(), String.class, null);
-            _cashbackAmount = (BigDecimal) _tlv.getValue((byte) RepFieldCode.CashbackAmount.getRepFieldCode(),
-                    BigDecimal.class, null);
-            _gratuityAmount = (BigDecimal) _tlv.getValue((byte) RepFieldCode.GratuityAmount.getRepFieldCode(),
-                    BigDecimal.class, null);
-            _finalAmount = (BigDecimal) _tlv.getValue((byte) RepFieldCode.FinalTransactionAmount.getRepFieldCode(),
-                    BigDecimal.class, null);
-            _availableAmount = (BigDecimal) _tlv.getValue((byte) RepFieldCode.AvailableAmount.getRepFieldCode(),
-                    BigDecimal.class, null);
-            _dccCode = (String) _tlv.getValue((byte) RepFieldCode.DccCurrency.getRepFieldCode(), String.class, null);
-            _dccAmount = (BigDecimal) _tlv.getValue((byte) RepFieldCode.DccConvertedAmount.getRepFieldCode(),
-                    BigDecimal.class, null);
-            _txnSubType = (TransactionSubTypes) _tlv.getValue((byte) RepFieldCode.TransactionSubType.getRepFieldCode(),
-                    TransactionSubTypes.class, null);
-            _dccStatus = (DynamicCurrencyStatus) _tlv.getValue((byte) RepFieldCode.DccOperationStatus.getRepFieldCode(),
-                    DynamicCurrencyStatus.class, null);
-            _splitSaleAmount = (BigDecimal) _tlv.getValue((byte) RepFieldCode.SplitSalePaidAmount.getRepFieldCode(),
-                    BigDecimal.class, null);
-            _paymentMethod = (PaymentMethod) _tlv.getValue((byte) RepFieldCode.PaymentMethod.getRepFieldCode(),
-                    PaymentMethod.class, null);
+            _authCode = (String) _tlv.getValue((byte)
+                            RepFieldCode.Authcode.getRepFieldCode(),
+                            String.class, null);
+            _cashbackAmount = (BigDecimal) _tlv.getValue((byte)
+                            RepFieldCode.CashbackAmount.getRepFieldCode(),
+                            BigDecimal.class, null);
+            _gratuityAmount = (BigDecimal) _tlv.getValue((byte)
+                            RepFieldCode.GratuityAmount.getRepFieldCode(),
+                            BigDecimal.class, null);
+            _finalAmount = (BigDecimal) _tlv.getValue((byte)
+                            RepFieldCode.FinalTransactionAmount.getRepFieldCode(),
+                            BigDecimal.class, null);
+            _availableAmount = (BigDecimal) _tlv.getValue((byte)
+                            RepFieldCode.AvailableAmount.getRepFieldCode(),
+                            BigDecimal.class, null);
+            _dccCode = (String) _tlv.getValue((byte)
+                            RepFieldCode.DccCurrency.getRepFieldCode(),
+                            String.class, null);
+            _dccAmount = (BigDecimal) _tlv.getValue((byte)
+                            RepFieldCode.DccConvertedAmount.getRepFieldCode(),
+                            BigDecimal.class, null);
+            _txnSubType = (TransactionSubTypes) _tlv.getValue((byte)
+                            RepFieldCode.TransactionSubType.getRepFieldCode(),
+                            TransactionSubTypes.class, null);
+            _dccStatus = (DynamicCurrencyStatus) _tlv.getValue((byte)
+                            RepFieldCode.DccOperationStatus.getRepFieldCode(),
+                            DynamicCurrencyStatus.class, null);
+            _splitSaleAmount = (BigDecimal) _tlv.getValue((byte)
+                            RepFieldCode.SplitSalePaidAmount.getRepFieldCode(),
+                            BigDecimal.class, null);
+            _paymentMethod = (PaymentMethod) _tlv.getValue((byte)
+                            RepFieldCode.PaymentMethod.getRepFieldCode(),
+                            PaymentMethod.class, null);
         } catch (Exception e) {
             e.printStackTrace();
         }

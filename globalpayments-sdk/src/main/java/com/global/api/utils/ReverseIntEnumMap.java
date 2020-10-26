@@ -9,7 +9,7 @@ public class ReverseIntEnumMap<V extends Enum<V> & INumericConstant> {
     private Map<Integer, V> map = new HashMap<Integer, V>();
 
     public ReverseIntEnumMap(Class<V> valueType) {
-        for(V v: valueType.getEnumConstants()) {
+        for (V v : valueType.getEnumConstants()) {
             map.put(v.getValue(), v);
         }
     }

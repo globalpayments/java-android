@@ -8,7 +8,16 @@ public enum CurrencyType implements IStringConstant {
     Voucher("VOUCHER");
 
     String value;
-    CurrencyType(String value) { this.value = value; }
-    public String getValue() { return this.value; }
-    public byte[] getBytes() { return this.value.getBytes(); }
+
+    CurrencyType(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return this.value;
+    }
+
+    public byte[] getBytes() {
+        return this.value.getBytes();
+    }
 }

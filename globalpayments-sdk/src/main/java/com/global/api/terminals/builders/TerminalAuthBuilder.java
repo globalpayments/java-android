@@ -1,13 +1,11 @@
 package com.global.api.terminals.builders;
 
 import com.global.api.ServicesContainer;
-//import com.global.api.entities.Address;
 import com.global.api.entities.enums.CurrencyType;
 import com.global.api.entities.enums.PaymentMethodType;
 import com.global.api.entities.enums.TaxType;
 import com.global.api.entities.enums.TransactionType;
 import com.global.api.entities.exceptions.ApiException;
-//import com.global.api.paymentMethods.CreditCardData;
 import com.global.api.paymentMethods.IPaymentMethod;
 import com.global.api.paymentMethods.TransactionReference;
 import com.global.api.terminals.DeviceController;
@@ -22,7 +20,7 @@ import java.math.BigDecimal;
 import java.util.EnumSet;
 
 public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
-//    private Address address;
+
     private boolean allowDuplicates;
     private BigDecimal amount;
     private BigDecimal cashBackAmount;
@@ -48,10 +46,6 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     private TransactionStatus transactionStatus;
     private PATResponseType pattResponseType;
     private PATPaymentMode pattPaymentMode;
-
-//    public Address getAddress() {
-//        return address;
-//    }
 
     public boolean isAllowDuplicates() {
         return allowDuplicates;
@@ -149,13 +143,6 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
         return pattPaymentMode;
     }
 
-
-
-//    public TerminalAuthBuilder withAddress(Address address) {
-//        this.address = address;
-//        return this;
-//    }
-
     public TerminalAuthBuilder withAllowDuplicates(boolean allowDuplicates) {
         this.allowDuplicates = allowDuplicates;
         return this;
@@ -239,13 +226,6 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
         return this;
     }
 
-//    public TerminalAuthBuilder withToken(String value) {
-//        if (paymentMethod == null || !(paymentMethod instanceof CreditCardData))
-//            paymentMethod = new CreditCardData();
-//        ((CreditCardData) paymentMethod).setToken(value);
-//        return this;
-//    }
-
     public TerminalAuthBuilder withTransactionId(String value) {
         if (paymentMethod == null || !(paymentMethod instanceof TransactionReference))
             paymentMethod = new TransactionReference();
@@ -302,24 +282,32 @@ public class TerminalAuthBuilder extends TerminalBuilder<TerminalAuthBuilder> {
     }
 
     public void setupValidations() {
-        this.validations.of(EnumSet.of(TransactionType.Sale, TransactionType.Auth)).check("amount").isNotNull();
+        this.validations.of(EnumSet.of(TransactionType.Sale, TransactionType.Auth))
+                .check("amount").isNotNull();
         this.validations.of(TransactionType.Refund).check("amount").isNotNull();
-        this.validations.of(TransactionType.Auth).with(PaymentMethodType.Credit).when("transactionId").isNotNull()
+        this.validations.of(TransactionType.Auth).with(PaymentMethodType.Credit)
+                .when("transactionId").isNotNull()
                 .check("authCode").isNotNull();
-        this.validations.of(TransactionType.Refund).with(PaymentMethodType.Credit).when("transactionId").isNotNull()
+        this.validations.of(TransactionType.Refund).with(PaymentMethodType.Credit)
+                .when("transactionId").isNotNull()
                 .check("authCode").isNotNull();
         this.validations.of(PaymentMethodType.Gift).check("currency").isNotNull();
         this.validations.of(TransactionType.AddValue).check("amount").isNotNull();
 
-        this.validations.of(PaymentMethodType.EBT).with(TransactionType.Balance).when("currency").isNotNull()
+        this.validations.of(PaymentMethodType.EBT).with(TransactionType.Balance)
+                .when("currency").isNotNull()
                 .check("currency").isNotEqual(CurrencyType.Voucher);
-        this.validations.of(TransactionType.BenefitWithdrawal).when("currency").isNotNull().check("currency")
+        this.validations.of(TransactionType.BenefitWithdrawal).when("currency")
+                .isNotNull().check("currency")
                 .isEqualTo(CurrencyType.CashBenefits);
-        this.validations.of(PaymentMethodType.EBT).with(TransactionType.Refund).check("allowDuplicates")
+        this.validations.of(PaymentMethodType.EBT).with(TransactionType.Refund)
+                .check("allowDuplicates")
                 .isEqualTo(false);
-        this.validations.of(PaymentMethodType.EBT).with(TransactionType.BenefitWithdrawal).check("allowDuplicates")
+        this.validations.of(PaymentMethodType.EBT).with(TransactionType.BenefitWithdrawal)
+                .check("allowDuplicates")
                 .isEqualTo(false);
-        this.validations.of(PaymentMethodType.Other).with(TransactionType.PayAtTable).when("amount").isNull()
+        this.validations.of(PaymentMethodType.Other).with(TransactionType.PayAtTable)
+                .when("amount").isNull()
                 .check("xmlPath").isNotNull();
     }
 }

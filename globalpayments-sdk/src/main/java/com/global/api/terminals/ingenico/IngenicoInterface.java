@@ -1,7 +1,5 @@
 package com.global.api.terminals.ingenico;
 
-import android.util.Log;
-
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.entities.exceptions.UnsupportedTransactionException;
 import com.global.api.terminals.abstractions.*;

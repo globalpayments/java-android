@@ -17,15 +17,19 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
     public String getDeviceId() {
         return getSearchBuilder().getUniqueDeviceId();
     }
+
     public Date getEndDate() {
         return getSearchBuilder().getEndDate();
     }
+
     public Date getStartDate() {
         return getSearchBuilder().getStartDate();
     }
+
     public String getTransactionId() {
         return transactionId;
     }
+
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
     }
@@ -34,18 +38,22 @@ public class TransactionReportBuilder<TResult> extends ReportBuilder<TResult> {
         this.deviceId = value;
         return this;
     }
+
     public TransactionReportBuilder<TResult> withEndDate(Date value) {
         this.endDate = value;
         return this;
     }
+
     public TransactionReportBuilder<TResult> withStartDate(Date value) {
         this.startDate = value;
         return this;
     }
+
     public TransactionReportBuilder<TResult> withTransactionId(String value) {
         this.transactionId = value;
         return this;
     }
+
     public TransactionReportBuilder<TResult> withTimeZoneConversion(TimeZoneConversion value) {
         setTimeZoneConversion(value);
         return this;

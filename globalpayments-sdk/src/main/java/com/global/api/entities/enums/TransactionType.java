@@ -48,9 +48,9 @@ public enum TransactionType implements IFlag {
 
     public static Set<TransactionType> getSet(long value) {
         EnumSet<TransactionType> flags = EnumSet.noneOf(TransactionType.class);
-        for(TransactionType flag : TransactionType.values()) {
+        for (TransactionType flag : TransactionType.values()) {
             long flagValue = flag.getLongValue();
-            if((flagValue & value) == flagValue)
+            if ((flagValue & value) == flagValue)
                 flags.add(flag);
         }
         return flags;

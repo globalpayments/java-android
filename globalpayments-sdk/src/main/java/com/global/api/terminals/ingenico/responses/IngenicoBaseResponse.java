@@ -1,10 +1,7 @@
 package com.global.api.terminals.ingenico.responses;
 
-import android.util.Log;
-
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 import com.global.api.terminals.DeviceResponse;
 import com.global.api.terminals.TerminalUtilities;
@@ -47,11 +44,13 @@ public abstract class IngenicoBaseResponse extends DeviceResponse {
             String strBuffer = TerminalUtilities.getString(response);
 
             setReferenceNumber(strBuffer.substring(0, 2));
-            setStatus(TransactionStatus.getEnumName(Integer.parseInt(strBuffer.substring(2, 3))).toString());
+            setStatus(TransactionStatus.getEnumName(
+                    Integer.parseInt(strBuffer.substring(2, 3))).toString());
             setAmount(strBuffer.substring(3, 11));
-            setPaymentMode(PaymentMode.getEnumName(Integer.parseInt(strBuffer.substring(11, 12))));
+            setPaymentMode(PaymentMode.getEnumName(
+                    Integer.parseInt(strBuffer.substring(11, 12))));
             setCurrencyCode(strBuffer.substring(67, 70));
-            setPrivateData(strBuffer.substring(70, strBuffer.length()));
+            setPrivateData(strBuffer.substring(70));
 
             if (_format == ParseFormat.Transaction) {
                 String respField = strBuffer.substring(12, 67);

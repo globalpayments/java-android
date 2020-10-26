@@ -7,23 +7,24 @@ import com.global.api.terminals.ingenico.variables.TerminalConfigStatus;
 import java.nio.charset.StandardCharsets;
 
 public class TerminalConfigResponse extends IngenicoTerminalResponse implements IDeviceResponse {
-	private byte[] _buffer;
-	
-	public TerminalConfigResponse(byte[] buffer) {
-		super(buffer, ParseFormat.Transaction);
-		_buffer = buffer;
-		parseResponse(buffer);
-	}
+    private byte[] _buffer;
 
-	@Override
-	public void parseResponse(byte[] response) {
-        super.parseResponse(response);
-        String rawData = new String(response, StandardCharsets.UTF_8);
-        setStatus(TerminalConfigStatus.getEnumName(Integer.parseInt(rawData.substring(2, 3))).toString());
+    public TerminalConfigResponse(byte[] buffer) {
+        super(buffer, ParseFormat.Transaction);
+        _buffer = buffer;
+        parseResponse(buffer);
     }
 
-	@Override
-	public String toString() {
-		return new String(_buffer, StandardCharsets.UTF_8);
-	}
+    @Override
+    public void parseResponse(byte[] response) {
+        super.parseResponse(response);
+        String rawData = new String(response, StandardCharsets.UTF_8);
+        setStatus(TerminalConfigStatus.getEnumName(
+        		Integer.parseInt(rawData.substring(2, 3))).toString());
+    }
+
+    @Override
+    public String toString() {
+        return new String(_buffer, StandardCharsets.UTF_8);
+    }
 }

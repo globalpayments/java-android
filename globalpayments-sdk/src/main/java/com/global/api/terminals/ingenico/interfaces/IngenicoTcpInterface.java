@@ -12,27 +12,19 @@ import com.global.api.terminals.abstractions.IDeviceMessage;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.terminals.ingenico.pat.PATRequest;
 import com.global.api.terminals.ingenico.responses.BroadcastMessage;
-import com.global.api.terminals.ingenico.variables.DeviceMode;
 import com.global.api.terminals.ingenico.variables.INGENICO_GLOBALS;
 import com.global.api.terminals.messaging.IBroadcastMessageInterface;
 import com.global.api.terminals.messaging.IMessageSentInterface;
 import com.global.api.terminals.messaging.IOnPayAtTableRequestInterface;
 import com.global.api.utils.MessageWriter;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
-import static com.global.api.terminals.TerminalUtilities.calculateLRC;
 import static java.nio.charset.StandardCharsets.*;
 
 public class IngenicoTcpInterface implements IDeviceCommInterface {
@@ -176,7 +168,6 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
     }
 
     //endregion
-
     private void initializeServer() throws ConfigurationException, IOException {
         try {
             if (!_settings.getPort().isEmpty()) {
@@ -216,105 +207,6 @@ public class IngenicoTcpInterface implements IDeviceCommInterface {
             throw e;
         }
     }
-
-//    private void receviedData() {
-//        try {
-//            byte[] headerBuffer = new byte[2];
-//            while (_readData) {
-//                if (_settings.getConnectionMode() == ConnectionModes.PAY_AT_TABLE) {
-//                    byte[] buffer = new byte[8192];
-//                    _in.read(buffer, 0, buffer.length);
-//
-//                    MessageWriter byteArr = new MessageWriter();
-//                    for (int i = 0; i < buffer.length; i++) {
-//                        byteArr.add(buffer[i]);
-//
-//                        if (buffer[i] == ControlCodes.ETX.getByte()) {
-//                            byteArr.add(buffer[i + 1]);
-//                            break;
-//                        }
-//                    }
-//                    Integer arrLen = byteArr.toArray().length;
-//                    if (arrLen > 0) {
-//
-//                        String raw = TerminalUtilities.getString(byteArr.toArray());
-//                        String dataETX = raw.substring(1, raw.length() - 2);
-//                        String receivedLRC = raw.substring(raw.length() - 1);
-//
-//                        byte[] calculateLRC = TerminalUtilities.calculateLRC(dataETX);
-//                        String calculatedLRC = new String(calculateLRC, UTF_8);
-//
-//                        if (calculatedLRC.contentEquals(receivedLRC)) {
-//                            String data = dataETX;
-//
-//                            PATRequest patRequest = new PATRequest(data.getBytes());
-//                            if (_onPayAtTableRequest != null) {
-//                                _onPayAtTableRequest.onPayAtTableRequest(patRequest);
-//                            }
-//                        }
-//                    }
-//                } else {
-//                    int dataLength = TerminalUtilities.headerLength(headerBuffer);
-//                    byte[] dataBuffer = new byte[dataLength + 2];
-//
-//                    Thread.sleep(1000);
-//                    _in.read(dataBuffer, 0, dataBuffer.length);
-//
-//                    if (!_readData) {
-//                        break;
-//                    }
-//
-//                    if (_receivingException != null) {
-//                        dataBuffer = null;
-//                    }
-//
-//                    boolean incomplete = true;
-//                    int offset = 0;
-//                    int tempLength = dataLength;
-//
-//                    do {
-//                        int bytesReceived = _in.read(dataBuffer, offset, tempLength);
-//
-//                        if (!_readData) {
-//                            break;
-//                        }
-//
-//                        if (bytesReceived != tempLength) {
-//                            offset += bytesReceived;
-//                            tempLength -= bytesReceived;
-//                        } else {
-//                            incomplete = false;
-//                        }
-//                    } while (incomplete);
-//
-//                    byte[] readBuffer = new byte[dataLength];
-//                    System.arraycopy(dataBuffer, 0, readBuffer, 0, dataLength);
-//
-//                    if (isBroadcast(readBuffer)) {
-//                        BroadcastMessage broadcastMessage = new BroadcastMessage(readBuffer);
-//                        if (onBroadcastMessage != null) {
-//                            onBroadcastMessage.broadcastReceived(broadcastMessage.getCode(),
-//                                    broadcastMessage.getMessage());
-//                        }
-//                    } else if (isKeepAlive(readBuffer) && new INGENICO_GLOBALS().KEEPALIVE) {
-//                        _isKeepAlive = true;
-//                        byte[] kResponse = keepAliveResponse(readBuffer);
-//                        _out.write(kResponse);
-//                        _out.flush();
-//                    } else {
-//                        _terminalResponse = readBuffer;
-//                        Log.i("Response 1:", String.valueOf(_terminalResponse.length));
-//                        Log.i("Response 2:", Arrays.toString(_terminalResponse));
-//                        Log.i("Response 3:", Arrays.toString(readBuffer));
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            if (_isResponseNeeded || _isKeepAlive) {
-//                _receivingException = new ApiException("Socket Error: " + e.getMessage());
-//            }
-//        }
-//    }
 
     private void analyzeReceivedData() throws ApiException {
         try {

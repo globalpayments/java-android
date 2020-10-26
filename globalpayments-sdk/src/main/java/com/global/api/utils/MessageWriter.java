@@ -13,43 +13,45 @@ public class MessageWriter {
         buffer = new ArrayList<Byte>();
     }
 
-    public MessageWriter(byte[] bytes){
+    public MessageWriter(byte[] bytes) {
         buffer = new ArrayList<Byte>();
-        for(byte b: bytes)
+        for (byte b : bytes)
             buffer.add(b);
     }
 
-    public void add(Byte b) { buffer.add(b); }
+    public void add(Byte b) {
+        buffer.add(b);
+    }
 
-    public void add(IByteConstant constant){
+    public void add(IByteConstant constant) {
         buffer.add(constant.getByte());
     }
 
     public void add(IStringConstant constant) {
-        for(byte b: constant.getBytes())
+        for (byte b : constant.getBytes())
             buffer.add(b);
     }
 
     public void addRange(Byte[] bytes) {
-        for(byte b: bytes)
+        for (byte b : bytes)
             buffer.add(b);
     }
 
-    public void addRange(byte[] bytes){
-        for(byte b: bytes)
+    public void addRange(byte[] bytes) {
+        for (byte b : bytes)
             buffer.add(b);
     }
 
-    public void pop(){
+    public void pop() {
         buffer.remove(buffer.size() - 1);
     }
 
-    public byte[] toArray(){
+    public byte[] toArray() {
         byte[] b = new byte[buffer.size()];
 
         Object[] b2 = buffer.toArray();
-        for(int i = 0; i < buffer.size(); i++)
-            b[i] = (Byte)b2[i];
+        for (int i = 0; i < buffer.size(); i++)
+            b[i] = (Byte) b2[i];
 
         return b;
     }

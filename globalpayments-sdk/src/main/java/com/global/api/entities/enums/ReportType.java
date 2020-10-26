@@ -16,11 +16,12 @@ public enum ReportType implements IFlag {
     public long getLongValue() {
         return 1 << this.ordinal();
     }
+
     public static Set<ReportType> getSet(long value) {
         EnumSet<ReportType> flags = EnumSet.noneOf(ReportType.class);
-        for(ReportType flag : ReportType.values()) {
+        for (ReportType flag : ReportType.values()) {
             long flagValue = flag.getLongValue();
-            if((flagValue & value) == flagValue)
+            if ((flagValue & value) == flagValue)
                 flags.add(flag);
         }
         return flags;

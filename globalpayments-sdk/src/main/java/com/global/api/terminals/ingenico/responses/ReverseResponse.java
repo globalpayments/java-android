@@ -20,7 +20,8 @@ public class ReverseResponse extends IngenicoTerminalResponse implements IDevice
         if (response.length > 0) {
             super.parseResponse(response);
             String rawData = new String(response, StandardCharsets.UTF_8);
-            setStatus(ReverseStatus.getEnumName(Integer.parseInt(rawData.substring(2, 3))).toString());
+            setStatus(ReverseStatus.getEnumName(
+                    Integer.parseInt(rawData.substring(2, 3))).toString());
         }
     }
 

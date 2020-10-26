@@ -1,6 +1,6 @@
 package com.global.api.terminals.ingenico.responses;
 
-import java.util.*;
+import java.util.Hashtable;
 
 import com.global.api.entities.exceptions.MessageException;
 import com.global.api.terminals.TerminalUtilities;

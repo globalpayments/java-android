@@ -8,8 +8,12 @@ public enum BaudRate {
     r115200(115200);
 
     int value;
+
     BaudRate(int value) {
         this.value = value;
     }
-    public int getValue() { return this.value; }
+
+    public int getValue() {
+        return this.value;
+    }
 }

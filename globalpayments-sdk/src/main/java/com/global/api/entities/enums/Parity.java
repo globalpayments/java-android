@@ -6,6 +6,12 @@ public enum Parity {
     Even(2);
 
     int value;
-    Parity(int value){ this.value = value; }
-    public int getValue() { return this.value; }
+
+    Parity(int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
+        return this.value;
+    }
 }

@@ -7,9 +7,16 @@ public enum PrestigiousPropertyLimit implements IStringConstant {
     NotParticipating("NOT_PARTICIPATING");
 
     String value;
+
     PrestigiousPropertyLimit(String value) {
         this.value = value;
     }
-    public String getValue() { return value; }
-    public byte[] getBytes() { return value.getBytes(); }
+
+    public String getValue() {
+        return value;
+    }
+
+    public byte[] getBytes() {
+        return value.getBytes();
+    }
 }

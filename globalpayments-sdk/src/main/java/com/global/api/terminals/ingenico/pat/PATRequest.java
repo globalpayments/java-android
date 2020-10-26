@@ -1,13 +1,9 @@
 package com.global.api.terminals.ingenico.pat;
 
-import android.util.Log;
-import android.widget.Toast;
-
 import com.global.api.entities.exceptions.ApiException;
 import com.global.api.terminals.ingenico.variables.INGENICO_GLOBALS;
 import com.global.api.terminals.ingenico.variables.PATPrivateDataCode;
 import com.global.api.terminals.ingenico.variables.PATRequestType;
-import com.global.api.terminals.ingenico.variables.PATResponseType;
 import com.global.api.terminals.ingenico.variables.TLVFormat;
 import com.global.api.utils.TypeLengthValue;
 
@@ -19,7 +15,6 @@ import org.xml.sax.InputSource;
 
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ExecutionException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -155,14 +150,18 @@ public class PATRequest {
                         } else {
                             _tlv = new TypeLengthValue(privData.getBytes());
 
-                            _waiterId = (String) _tlv.getValue((byte) PATPrivateDataCode.WaiterId.getValue(),
+                            _waiterId = (String) _tlv.getValue((byte)
+                                            PATPrivateDataCode.WaiterId.getValue(),
                                     String.class, null);
-                            _tableNumber = (String) _tlv.getValue((byte) PATPrivateDataCode.TableId.getValue(),
+                            _tableNumber = (String) _tlv.getValue((byte)
+                                            PATPrivateDataCode.TableId.getValue(),
                                     String.class, TLVFormat.PayAtTable);
-                            _terminalId = (String) _tlv.getValue((byte) PATPrivateDataCode.TID.getValue(),
+                            _terminalId = (String) _tlv.getValue((byte)
+                                            PATPrivateDataCode.TID.getValue(),
                                     String.class, null);
                             _terminalCurrency = (String) _tlv.getValue(
-                                    (byte) PATPrivateDataCode.TerminalCurrency.getValue(), String.class, null);
+                                    (byte) PATPrivateDataCode.TerminalCurrency.getValue(),
+                                    String.class, null);
                         }
                     }
                 }

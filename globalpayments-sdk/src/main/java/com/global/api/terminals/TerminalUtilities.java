@@ -1,21 +1,17 @@
 package com.global.api.terminals;
 
-//import android.graphics.Color;
-
 import android.graphics.Point;
 
 import com.global.api.entities.enums.ConnectionModes;
 import com.global.api.entities.enums.ControlCodes;
 import com.global.api.entities.enums.IByteConstant;
 import com.global.api.entities.enums.IStringConstant;
-import com.global.api.entities.enums.MessageFormat;
 import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.terminals.abstractions.IRequestSubGroup;
 import com.global.api.utils.Extensions;
 import com.global.api.utils.MessageWriter;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 public class TerminalUtilities {
     private static final String version = "1.35";
@@ -92,137 +88,22 @@ public class TerminalUtilities {
         return new DeviceMessage(buffer.toArray());
     }
 
-//    private static DeviceMessage buildMessage(PaxMsgId messageId, String message) {
-//        MessageWriter buffer = new MessageWriter();
-//
-//        // Begin Message
-//        buffer.add(ControlCodes.STX);
-//
-//        // Add Message Id
-//        buffer.add(messageId);
-//        buffer.add(ControlCodes.FS);
-//
-//        // Add Version
-//        buffer.addRange(version.getBytes());
-//        buffer.add(ControlCodes.FS);
-//
-//        // Add Message
-//        buffer.addRange(message.getBytes());
-//
-//        // End the message
-//        buffer.add(ControlCodes.ETX);
-//
-//        byte lrc = calculateLRC(buffer.toArray());
-//        buffer.add(lrc);
-//
-//        return new DeviceMessage(buffer.toArray());
-//    }
-
-//    public static DeviceMessage buildRequest(String message, MessageFormat format) {
-//        MessageWriter buffer = new MessageWriter();
-//
-//        // beginning sentinel
-//        if (format.equals(MessageFormat.Visa2nd))
-//            buffer.add(ControlCodes.STX);
-//        else {
-//            buffer.add((byte) (message.length() >>> 8));
-//            buffer.add((byte) message.length());
-//        }
-//
-//        // put message
-//        buffer.addRange(message.getBytes());
-//
-//        // ending sentinel
-//        if (format.equals(MessageFormat.Visa2nd)) {
-//            buffer.add(ControlCodes.ETX);
-//
-//            byte lrc = calculateLRC(Arrays.toString(buffer.toArray()));
-//            buffer.add(lrc);
-//        }
-//
-//        return new DeviceMessage(buffer.toArray());
-//    }
-
-//    public static DeviceMessage buildRequest(PaxMsgId messageId, Object... elements) {
-//        String message = getElementString(elements);
-//        return buildMessage(messageId, message);
-//    }
-
-//    public static DeviceMessage buildRequest(byte[] message) {
-//        MessageWriter buffer = new MessageWriter();
-//
-//        // beginning sentinel
-//        buffer.add(ControlCodes.STX);
-//
-//        // put message
-//        buffer.addRange(message);
-//
-//        // ending sentinel
-//        buffer.add(ControlCodes.ETX);
-//
-//        byte lrc = calculateLRC(buffer.toArray());
-//        buffer.add(lrc);
-//
-//        return new DeviceMessage(buffer.toArray());
-//    }
-
     public static byte[] calculateLRC(String requestMessage) {
-        byte[] cCOde = new byte[] { ControlCodes.ETX.getByte() };
+        byte[] cCOde = new byte[]{ControlCodes.ETX.getByte()};
         int index1 = requestMessage.getBytes().length;
         int index2 = cCOde.length;
         byte[] bytes = new byte[index1 + index2];
-        System.arraycopy(requestMessage.getBytes(), 0, bytes, 0 ,index1);
+        System.arraycopy(requestMessage.getBytes(), 0, bytes, 0, index1);
         System.arraycopy(cCOde, 0, bytes, index1, index2);
 
         byte lrc = 0;
         for (int i = 0; i < bytes.length; i++) {
             lrc ^= bytes[i];
         }
-        bytes = new byte[] {lrc};
+        bytes = new byte[]{lrc};
         return bytes;
 
     }
-
-//    public static byte[] buildSignatureImage(String pathData) {
-//        String[] coordinates = pathData.split("\\^");
-//
-//        BufferedImage bmp = new BufferedImage(150, 100, BufferedImage.TYPE_INT_RGB);
-//        Graphics2D gfx = bmp.createGraphics();
-//        gfx.setColor(Color.WHITE);
-//        gfx.fillRect(0, 0, 150, 100);
-//        gfx.setColor(Color.BLACK);
-//
-//        int index = 0;
-//        String coordinate = coordinates[index++];
-//        do {
-//            if (coordinate.equals("0[COMMA]65535"))
-//                coordinate = coordinates[index++];
-//            Point start = toPoint(coordinate);
-//
-//            coordinate = coordinates[index++];
-//            if (coordinate.equals("0[COMMA]65535")) {
-//                gfx.fillRect(start.x, start.y, 1, 1);
-//            } else {
-//                Point end = toPoint(coordinate);
-//                gfx.drawLine(start.x, start.y, end.x, end.y);
-//            }
-//        } while (!coordinates[index].equals("~"));
-//        gfx.dispose();
-//
-//        // save to a memory stream and return the byte array
-//        try {
-//            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-//            ImageIO.write(bmp, "bmp", buffer);
-//            buffer.flush();
-//
-//            byte[] rvalue = buffer.toByteArray();
-//            buffer.close();
-//
-//            return rvalue;
-//        } catch (IOException exc) {
-//            return null;
-//        }
-//    }
 
     private static Point toPoint(String coordinate) {
         String[] xy = coordinate.split("\\[COMMA]");

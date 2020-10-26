@@ -6,7 +6,16 @@ public enum TimeZoneConversion implements IStringConstant {
     Datacenter("Datacenter");
 
     String value;
-    TimeZoneConversion(String value) { this.value = value; }
-    public String getValue() { return this.value; }
-    public byte[] getBytes() { return this.value.getBytes(); }
+
+    TimeZoneConversion(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return this.value;
+    }
+
+    public byte[] getBytes() {
+        return this.value.getBytes();
+    }
 }

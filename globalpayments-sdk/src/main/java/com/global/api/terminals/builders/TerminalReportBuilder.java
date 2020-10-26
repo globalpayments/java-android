@@ -1,11 +1,12 @@
 package com.global.api.terminals.builders;
 
-import com.global.api.terminals.abstractions.*;
-import com.global.api.*;
+import com.global.api.ServicesContainer;
 import com.global.api.entities.exceptions.ApiException;
-import com.global.api.terminals.*;
-//import com.global.api.terminals.pax.enums.PaxSearchCriteria;
-import com.global.api.terminals.ingenico.variables.*;
+import com.global.api.terminals.DeviceController;
+import com.global.api.terminals.TerminalReportType;
+import com.global.api.terminals.abstractions.ITerminalReport;
+import com.global.api.terminals.ingenico.variables.ReceiptType;
+import com.global.api.terminals.ingenico.variables.ReportTypes;
 
 public class TerminalReportBuilder {
     private TerminalReportType reportType;
@@ -56,10 +57,6 @@ public class TerminalReportBuilder {
     public TerminalReportBuilder(ReportTypes type) {
         this.type = type;
     }
-
-//    public <T> TerminalSearchBuilder where(PaxSearchCriteria criteria, T value) {
-//        return getSearchBuilder().And(criteria, value);
-//    }
 
     public ITerminalReport execute() throws ApiException {
         return execute("default");

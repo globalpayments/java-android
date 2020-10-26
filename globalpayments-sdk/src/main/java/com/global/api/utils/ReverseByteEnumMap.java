@@ -9,7 +9,7 @@ public class ReverseByteEnumMap<V extends Enum<V> & IByteConstant> {
     private Map<Byte, V> map = new HashMap<Byte, V>();
 
     ReverseByteEnumMap(Class<V> valueType) {
-        for(V v: valueType.getEnumConstants()) {
+        for (V v : valueType.getEnumConstants()) {
             map.put(v.getByte(), v);
         }
     }

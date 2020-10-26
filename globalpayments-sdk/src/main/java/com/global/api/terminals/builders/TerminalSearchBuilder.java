@@ -2,41 +2,18 @@ package com.global.api.terminals.builders;
 
 import java.lang.reflect.Field;
 
-//import com.global.api.ServicesContainer;
 import com.global.api.entities.exceptions.ApiException;
-//import com.global.api.entities.exceptions.BuilderException;
 import com.global.api.terminals.abstractions.ITerminalReport;
-//import com.global.api.terminals.pax.enums.PaxSearchCriteria;
-//import com.global.api.terminals.pax.enums.TerminalCardType;
-//import com.global.api.terminals.pax.enums.TerminalTransactionType;
 
 public class TerminalSearchBuilder {
     private TerminalReportBuilder _reportBuilder;
 
-//    private TerminalTransactionType transactionType;
-//    private TerminalCardType cardType;
     private int recordNumber;
     private int terminalReferenceNumber;
     private String authCode;
     private String referenceNumber;
     private int merchantId;
     private String merchantName;
-
-//    public TerminalTransactionType getTransactionType() {
-//        return transactionType;
-//    }
-//
-//    public void setTransactionType(TerminalTransactionType transactionType) {
-//        this.transactionType = transactionType;
-//    }
-
-//    public TerminalCardType getCardType() {
-//        return cardType;
-//    }
-//
-//    public void setCardType(TerminalCardType cardType) {
-//        this.cardType = cardType;
-//    }
 
     public int getRecordNumber() {
         return recordNumber;
@@ -90,11 +67,6 @@ public class TerminalSearchBuilder {
         _reportBuilder = reportBuilder;
     }
 
-//    public <T> TerminalSearchBuilder And(PaxSearchCriteria criteria, T value) {
-//        set(this, criteria.toString(), value);
-//        return this;
-//    }
-
     public ITerminalReport execute() throws ApiException {
         return execute("default");
     }
@@ -102,28 +74,6 @@ public class TerminalSearchBuilder {
     public ITerminalReport execute(String configName) throws ApiException {
         return _reportBuilder.execute(configName);
     }
-
-    // TO DO
-//	private <T> void SetProperty(String propertyName, T value)
-//	{
-//		Object prop = this.getClass().get().FirstOrDefault(p -> p.Name == propertyName); // rommel
-//
-//		if (prop != null) {
-//			if (prop.PropertyType == T.class) {
-//				prop.SetValue(this, value);
-//			} else if (prop.PropertyType.Name.equals("Nullable`1")) {
-//				if (prop.PropertyType.GenericTypeArguments[0] == T.class) {
-//					prop.SetValue(this, value);
-//				} else {
-//					Object convertedValue = Convert.ChangeType(value, prop.PropertyType.GenericTypeArguments[0]); // rommel
-//					prop.SetValue(this, convertedValue);
-//				}
-//			} else {
-//				Object convertedValue = Convert.ChangeType(value, prop.PropertyType); // rommel
-//				prop.SetValue(this, convertedValue);
-//			}
-//		}
-//	}
 
     private <T> void set(Object object, String fieldName, T fieldValue) {
         Class<?> clazz = object.getClass();
