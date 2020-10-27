@@ -73,8 +73,14 @@ public abstract class IngenicoBaseResponse extends DeviceResponse {
     }
 
     public String getDccStatus() {
-        DynamicCurrencyStatus dccStatus = DynamicCurrencyStatus.getEnumName(_dccStatus.getValue());
-        return dccStatus.toString();
+        DynamicCurrencyStatus dccStatus = null;
+
+        if (_respField.getDccStatus() != null) {
+            int iDccStatus = _respField.getDccStatus().getValue();
+            dccStatus = DynamicCurrencyStatus.getEnumName(iDccStatus);
+        }
+
+        return dccStatus == null ? "" : dccStatus.toString();
     }
 
     public void setDccStatus(DynamicCurrencyStatus dccStatus) {
