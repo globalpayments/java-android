@@ -31,9 +31,8 @@ public class ExampleUnitTest {
             config.setDeviceType(DeviceType.INGENICO);
             config.setConnectionMode(ConnectionModes.TCP_IP_SERVER);
             config.setPort("18101");
-            config.setTimeout(30000);
+            config.setTimeout(1000);
             _device = DeviceService.create(config);
-            Thread.sleep(2000);
         } catch (Exception e) {
             e.printStackTrace();
         }

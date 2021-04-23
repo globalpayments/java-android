@@ -40,6 +40,7 @@ public enum TransactionType implements IFlag {
     SendFile,
     Cancel,
     Duplicate,
+    Referral,
     PayAtTable;
 
     public long getLongValue() {

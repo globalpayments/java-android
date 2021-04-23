@@ -236,6 +236,11 @@ public abstract class DeviceInterface<T extends DeviceController> implements IDe
         return new TerminalManageBuilder(TransactionType.Capture, PaymentMethodType.Credit).withAmount(amount);
     }
 
+    public TerminalManageBuilder referralConfirmation() throws ApiException {
+        return new TerminalManageBuilder(TransactionType.Referral, PaymentMethodType.Reference)
+                .withAmount(new BigDecimal(0.01));
+    }
+
     public TerminalAuthBuilder refund(BigDecimal amount) throws ApiException {
         return new TerminalAuthBuilder(TransactionType.Refund, PaymentMethodType.Credit).withAmount(amount);
     }

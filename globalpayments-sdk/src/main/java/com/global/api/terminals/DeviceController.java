@@ -72,6 +72,7 @@ public abstract class DeviceController implements IDisposable {
             public void broadcastReceived(String code, String message) {
                 if (onBroadcastMessage != null) {
                     onBroadcastMessage.broadcastReceived(code, message);
+
                 }
             }
         });

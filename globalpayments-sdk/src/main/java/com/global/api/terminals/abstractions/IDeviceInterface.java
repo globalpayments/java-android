@@ -122,6 +122,8 @@ public interface IDeviceInterface extends IDisposable {
 
     TerminalAuthBuilder verify() throws ApiException;
 
+    TerminalManageBuilder referralConfirmation() throws ApiException;
+
     // reporting
     TerminalReportBuilder getReport(ReportTypes reportTypes) throws ApiException;
 

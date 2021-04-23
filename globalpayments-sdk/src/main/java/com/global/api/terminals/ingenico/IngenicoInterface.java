@@ -65,6 +65,12 @@ public class IngenicoInterface extends DeviceInterface<IngenicoController> imple
     }
 
     @Override
+    public TerminalManageBuilder referralConfirmation() throws ApiException {
+        paymentMethod = PaymentType.REFERRAL_CONFIRMATION;
+        return super.referralConfirmation();
+    }
+
+    @Override
     public TerminalAuthBuilder authorize(BigDecimal amount) throws ApiException {
         paymentMethod = PaymentType.PREAUTH;
         return super.authorize(amount);
@@ -75,6 +81,7 @@ public class IngenicoInterface extends DeviceInterface<IngenicoController> imple
         paymentMethod = PaymentType.ACCOUNT_VERIFICATION;
         return super.verify();
     }
+
 
     @Override
     public TerminalReportBuilder getReport(ReportTypes type) throws ApiException {

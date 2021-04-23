@@ -11,7 +11,6 @@ import com.global.api.entities.exceptions.ConfigurationException;
 import com.global.api.serviceConfigs.Configuration;
 import com.global.api.terminals.abstractions.ITerminalConfiguration;
 import com.global.api.terminals.ingenico.IngenicoController;
-import com.global.api.terminals.ingenico.variables.DeviceMode;
 import com.global.api.utils.StringUtils;
 
 public class ConnectionConfig extends Configuration implements ITerminalConfiguration {
